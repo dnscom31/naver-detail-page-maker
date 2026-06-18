@@ -489,6 +489,82 @@ def make_korea_box(width: int, theme: Dict[str, str], config: Dict) -> Image.Ima
     return stitch([head, body], width, bg)
 
 
+def make_story_section(width: int, theme: Dict[str, str], config: Dict) -> Image.Image:
+    bg = theme["section_bg"]
+    head = make_heading_block(
+        width,
+        bg,
+        theme["point"],
+        theme["text"],
+        theme["muted"],
+        config["heading_font"],
+        config["body_font"],
+        "BRAND STORY",
+        "왜 이 제품을 선보이게 되었는지 전합니다",
+        "만드는 기준과 고객을 대하는 마음을 담았습니다.",
+        align=theme.get("heading_align", "center"),
+        padding_bottom=28,
+        base_size=config["base_font_size"],
+    )
+    blocks = [head]
+    story_items = [
+        (config.get("story_intro_title", ""), config.get("story_intro_text", "")),
+        (config.get("story_making_title", ""), config.get("story_making_text", "")),
+        (config.get("story_customer_title", ""), config.get("story_customer_text", "")),
+    ]
+    for title, text in story_items:
+        if str(title).strip() or str(text).strip():
+            blocks.append(make_copy_block(width, theme, config, str(title).strip(), str(text).strip(), bg=bg))
+    return stitch(blocks, width, bg)
+
+
+def make_group_order_section(width: int, theme: Dict[str, str], config: Dict) -> Image.Image:
+    """단체 주문과 도소매 상담 안내를 강조하는 독립 구역을 만듭니다."""
+    bg = theme["section_bg"]
+    outer_margin = 38
+    inner_width = width - outer_margin * 2
+    temp = Image.new("RGB", (width, 10), "white")
+    draw = ImageDraw.Draw(temp)
+
+    label_font = get_font(config["body_font"], max(13, config["base_font_size"] - 3), bold=True)
+    title_font = get_font(config["heading_font"], max(28, int(config["base_font_size"] * 1.8)), bold=True)
+    text_font = get_font(config["body_font"], config["base_font_size"])
+    contact_font = get_font(config["body_font"], max(15, config["base_font_size"] - 1), bold=True)
+
+    label = "GROUP & WHOLESALE"
+    title = config.get("group_order_title", "단체 주문 및 도소매 상담 가능합니다")
+    text = config.get("group_order_text", "")
+    contact = config.get("group_order_contact", "")
+
+    label_h = text_height(draw, label, label_font, inner_width - 70, 4)
+    title_h = text_height(draw, title, title_font, inner_width - 70, 10)
+    text_h = text_height(draw, text, text_font, inner_width - 70, 8)
+    contact_h = text_height(draw, contact, contact_font, inner_width - 70, 6) if contact else 0
+    box_h = 46 + label_h + 16 + title_h + 20 + text_h + (20 + contact_h if contact else 0) + 46
+
+    block = solid_block(width, box_h + 70, bg)
+    d = ImageDraw.Draw(block)
+    d.rounded_rectangle(
+        (outer_margin, 35, width - outer_margin, 35 + box_h),
+        radius=18,
+        fill=_hex(theme["soft_bg"]),
+        outline=_hex(theme["point"]),
+        width=2,
+    )
+    x = outer_margin + 35
+    y = 35 + 46
+    content_width = inner_width - 70
+    draw_wrapped(d, (x, y), label, label_font, _hex(theme["point"]), content_width, "center", 4)
+    y += label_h + 16
+    draw_wrapped(d, (x, y), title, title_font, _hex(theme["text"]), content_width, "center", 10)
+    y += title_h + 20
+    draw_wrapped(d, (x, y), text, text_font, _hex(theme["muted"]), content_width, "center", 8)
+    if contact:
+        y += text_h + 20
+        draw_wrapped(d, (x, y), contact, contact_font, _hex(theme["point"]), content_width, "center", 6)
+    return block
+
+
 def make_uses_section(width: int, theme: Dict[str, str], config: Dict, uses: Sequence[Sequence[str]]) -> Image.Image:
     head = make_heading_block(
         width,
@@ -800,6 +876,10 @@ def build_detail_jpg(
     blocks.append(make_gallery(extra_detail_images, width, theme["section_bg"], columns=1, max_height=950))
 
     blocks.append(make_full_image_block(core_images.get("korea"), width, theme["soft_bg"], 1100))
+    if config.get("story_enabled", True):
+        blocks.append(make_story_section(width, theme, config))
+    if config.get("group_order_enabled", True):
+        blocks.append(make_group_order_section(width, theme, config))
 
     blocks.append(make_uses_section(width, theme, config, uses))
     blocks.append(make_full_image_block(core_images.get("styling"), width, theme["section_bg"], 1200))
