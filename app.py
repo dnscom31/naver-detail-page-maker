@@ -74,7 +74,64 @@ THEMES = {
         "hero_text": "#352b2d",
         "heading_align": "center",
     },
+    "세이지 그린": {
+        "description": "차분한 세이지 그린 계열로 편안하고 자연스러운 이미지를 강조하는 테마",
+        "page_bg": "#f1f5f0",
+        "section_bg": "#fbfdfb",
+        "soft_bg": "#dfe8dd",
+        "text": "#263127",
+        "muted": "#667468",
+        "point": "#6f8b72",
+        "line": "#d5ddd4",
+        "card_bg": "#fbfdfb",
+        "hero_bg": "#e6eee4",
+        "hero_text": "#263127",
+        "heading_align": "center",
+    },
+    "딥 네이비": {
+        "description": "네이비와 실버 포인트로 신뢰감 있고 정돈된 느낌을 주는 테마",
+        "page_bg": "#eef1f7",
+        "section_bg": "#ffffff",
+        "soft_bg": "#1f2d44",
+        "text": "#203048",
+        "muted": "#5f6c82",
+        "point": "#6f88b5",
+        "line": "#d8dee9",
+        "card_bg": "#ffffff",
+        "hero_bg": "#273853",
+        "hero_text": "#ffffff",
+        "heading_align": "left",
+    },
+    "테라코타 브라운": {
+        "description": "따뜻한 브라운과 테라코타 포인트로 깊이 있고 안정적인 인상을 주는 테마",
+        "page_bg": "#f7f0eb",
+        "section_bg": "#fffaf7",
+        "soft_bg": "#ead9cf",
+        "text": "#3b2b24",
+        "muted": "#7a655b",
+        "point": "#b06f52",
+        "line": "#e3d3ca",
+        "card_bg": "#fffaf7",
+        "hero_bg": "#efe1d8",
+        "hero_text": "#3b2b24",
+        "heading_align": "center",
+    },
+    "라벤더 그레이": {
+        "description": "라벤더와 그레이 톤으로 부드럽고 세련된 분위기를 만드는 테마",
+        "page_bg": "#f3f1f7",
+        "section_bg": "#fcfbff",
+        "soft_bg": "#e4dfec",
+        "text": "#342f3c",
+        "muted": "#726b7b",
+        "point": "#8a7aa6",
+        "line": "#ddd7e7",
+        "card_bg": "#fcfbff",
+        "hero_bg": "#ece7f3",
+        "hero_text": "#342f3c",
+        "heading_align": "center",
+    },
 }
+
 
 FONTS = ["맑은 고딕", "고딕 계열", "명조 계열", "바탕"]
 
@@ -102,6 +159,7 @@ DEFAULTS = {
     "section_spacing": 72,
     "jpg_quality": 90,
     "detail_page_mode": "혼합형 상세페이지",
+    "product_type_preset": "블라우스형",
     "brand_line": "KOREAN FABRIC · MADE IN KOREA",
     "main_title": "편안하게 입고\n단정하게 완성되는 옷",
     "main_subtitle": "부담 없이 손이 가고, 입었을 때 분위기까지 자연스럽게 정돈되는 한 벌을 소개합니다.",
@@ -179,6 +237,143 @@ DEFAULTS = {
 }
 
 
+PRODUCT_PRESETS = {
+    "블라우스형": {
+        "main_title": "편안하게 입고\n단정하게 완성되는 블라우스",
+        "main_subtitle": "가볍게 손이 가면서도 차려입은 듯 정돈된 분위기를 전하는 블라우스를 소개합니다.",
+        "look_description": "상체 라인을 답답하게 조이지 않으면서도 전체 인상이 깔끔하게 정리되도록 균형을 고려했습니다.",
+        "point1_title": "부드럽게 흐르는 실루엣",
+        "point1_text": "몸을 따라 자연스럽게 떨어져 편안하면서도 단정한 느낌을 전합니다.",
+        "point2_title": "활용도 높은 상의",
+        "point2_text": "팬츠, 스커트, 이너와 매치하기 좋아 데일리부터 모임까지 폭넓게 활용할 수 있습니다.",
+        "point3_title": "가볍고 산뜻한 착용감",
+        "point3_text": "오랜 시간 입어도 답답함이 덜하고 계절감에 맞춰 다양하게 연출하기 좋습니다.",
+        "point4_title": "가까이서 더 느껴지는 완성도",
+        "point4_text": "넥라인과 여밈, 소매와 밑단까지 전체 분위기를 해치지 않도록 차분하게 마감했습니다.",
+        "fabric_title": "블라우스의 분위기를 살리는 소재",
+        "fabric_text": "가벼워 보이면서도 지나치게 힘없지 않은 소재를 골라, 입었을 때 자연스러운 흐름과 단정한 인상을 함께 느낄 수 있습니다.",
+        "button_title": "디자인을 정리해 주는 디테일",
+        "button_text": "카라, 여밈, 장식, 절개처럼 작은 요소들이 전체 인상을 깔끔하게 정리해 주도록 구성했습니다.",
+        "uses": "편안한 외출|과하지 않게 단정한 분위기\n가족·지인 모임|부드럽고 정돈된 스타일\n식사 자리|차려입은 듯 자연스러운 코디\n여행·나들이|가볍고 활용도 높은 상의",
+        "specs": "제품명|블라우스 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "원피스형": {
+        "main_title": "한 벌로 편안하고\n단정하게 완성되는 원피스",
+        "main_subtitle": "과하게 꾸미지 않아도 한 벌만으로 분위기와 편안함을 함께 챙길 수 있는 원피스를 소개합니다.",
+        "look_description": "몸의 선을 부담스럽게 드러내지 않으면서도 전체 비율이 단정하게 보이도록 실루엣을 정리했습니다.",
+        "point1_title": "한 벌로 완성되는 스타일",
+        "point1_text": "코디 고민을 덜어주면서도 자연스럽게 차려입은 인상을 전합니다.",
+        "point2_title": "편안한 움직임",
+        "point2_text": "장시간 착용해도 답답함이 덜하고 일상과 외출 모두에 잘 어울립니다.",
+        "point3_title": "부담 없는 분위기",
+        "point3_text": "화려함보다 차분한 멋을 살려 다양한 자리에서 편안하게 입기 좋습니다.",
+        "point4_title": "실루엣을 살리는 마감",
+        "point4_text": "넥라인과 허리선, 소매와 밑단까지 전체 흐름을 자연스럽게 완성했습니다.",
+        "fabric_title": "원피스의 흐름을 살리는 소재",
+        "fabric_text": "착용 시 실루엣이 무겁지 않게 떨어지면서도 비침, 두께, 조직감의 균형이 안정적으로 느껴지도록 구성했습니다.",
+        "button_title": "한 벌의 분위기를 좌우하는 디테일",
+        "button_text": "여밈, 절개, 장식, 포켓 같은 요소를 과하지 않게 배치해 전체적인 완성도를 높였습니다.",
+        "uses": "일상 외출|한 벌만으로 자연스러운 코디\n가족 모임|부담 없이 단정한 스타일\n식사·행사 자리|과하지 않게 격식을 갖춘 분위기\n여행·나들이|편안하면서도 사진이 잘 받는 코디",
+        "specs": "제품명|원피스 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "재킷형": {
+        "main_title": "차분한 격식과 편안함을 담은 재킷",
+        "main_subtitle": "가볍게 걸쳐도 인상이 정돈되고, 여러 자리에서 활용하기 좋은 재킷을 소개합니다.",
+        "look_description": "어깨선과 앞여밈, 전체 비율이 깔끔하게 정리되어 걸쳤을 때 단정한 인상을 전합니다.",
+        "point1_title": "정돈된 실루엣",
+        "point1_text": "과하게 힘주지 않아도 전체 라인이 차분하게 정리되도록 설계했습니다.",
+        "point2_title": "다양한 이너와 매치",
+        "point2_text": "블라우스, 티셔츠, 원피스 위에 가볍게 걸치기 좋아 활용 범위가 넓습니다.",
+        "point3_title": "격식과 실용성의 균형",
+        "point3_text": "모임이나 외출은 물론 평소에도 부담 없이 입기 좋도록 완성했습니다.",
+        "point4_title": "재킷다운 마감 완성도",
+        "point4_text": "카라, 앞여밈, 절개, 소매 마감까지 전체 구조를 안정감 있게 정리했습니다.",
+        "fabric_title": "형태감을 살리는 소재",
+        "fabric_text": "너무 무겁지 않으면서도 재킷 특유의 단정한 형태감이 살아나도록 소재의 밀도와 조직감을 고려했습니다.",
+        "button_title": "재킷의 분위기를 완성하는 요소",
+        "button_text": "단추, 카라, 포켓, 절개선 등 재킷의 인상을 좌우하는 요소를 균형 있게 담았습니다.",
+        "uses": "격식 있는 외출|과하지 않은 단정함\n가족·지인 모임|깔끔하고 안정적인 코디\n식사 자리|가볍게 걸쳐 완성하는 스타일\n간절기 활용|실용성과 분위기를 함께 챙기는 아이템",
+        "specs": "제품명|재킷 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "티셔츠형": {
+        "main_title": "편안함 속에 단정함을 담은 티셔츠",
+        "main_subtitle": "매일 손이 가는 편안함에 깔끔한 인상까지 더한 티셔츠를 소개합니다.",
+        "look_description": "몸에 지나치게 달라붙지 않으면서도 전체 인상이 흐트러져 보이지 않도록 균형을 잡았습니다.",
+        "point1_title": "매일 입기 좋은 편안함",
+        "point1_text": "부드러운 착용감과 부담 없는 핏으로 일상에서 자주 손이 갑니다.",
+        "point2_title": "단정한 기본 디자인",
+        "point2_text": "심플하지만 밋밋하지 않게, 다양한 하의와 자연스럽게 어울립니다.",
+        "point3_title": "레이어드하기 좋은 활용도",
+        "point3_text": "단독 착용은 물론 재킷이나 조끼 안에도 깔끔하게 매치됩니다.",
+        "point4_title": "기본일수록 중요한 완성도",
+        "point4_text": "넥라인, 어깨선, 소매와 밑단처럼 기본 티셔츠일수록 작은 마감 차이를 중요하게 보았습니다.",
+        "fabric_title": "매일 입고 싶은 소재감",
+        "fabric_text": "편안한 촉감과 안정적인 조직감을 살려 단독으로 입어도 부담 없고 다양한 계절에 활용하기 좋습니다.",
+        "button_title": "기본을 살리는 디테일",
+        "button_text": "넥라인, 봉제선, 절개, 작은 장식처럼 티셔츠의 인상을 좌우하는 부분을 깔끔하게 마무리했습니다.",
+        "uses": "일상 외출|부담 없이 손이 가는 코디\n가족·지인 모임|편안하지만 깔끔한 인상\n재킷 이너|안정감 있는 레이어드\n여행·나들이|가볍고 실용적인 착용",
+        "specs": "제품명|티셔츠 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "팬츠형": {
+        "main_title": "편안한 움직임과 단정한 실루엣의 팬츠",
+        "main_subtitle": "매일 입기 좋으면서도 전체 코디를 안정감 있게 정리해 주는 팬츠를 소개합니다.",
+        "look_description": "허리부터 밑단까지 답답함은 덜고 라인은 깔끔하게 보이도록 균형을 고려했습니다.",
+        "point1_title": "편안한 착용감",
+        "point1_text": "오랜 시간 착용해도 부담이 덜하고 일상에서 자연스럽게 손이 갑니다.",
+        "point2_title": "정돈된 하체 실루엣",
+        "point2_text": "과하게 붙거나 부해 보이지 않도록 안정감 있는 라인을 완성했습니다.",
+        "point3_title": "다양한 상의와 매치",
+        "point3_text": "블라우스, 티셔츠, 재킷과 두루 어울려 데일리 활용도가 높습니다.",
+        "point4_title": "팬츠에서 중요한 디테일",
+        "point4_text": "허리선, 주머니, 절개, 밑단 마감까지 실제 착용감을 생각해 꼼꼼하게 살폈습니다.",
+        "fabric_title": "움직임을 고려한 소재",
+        "fabric_text": "팬츠는 자주 입는 만큼 편안함과 형태감을 함께 살릴 수 있는 소재 선택이 중요하다고 생각했습니다.",
+        "button_title": "착용감을 좌우하는 요소",
+        "button_text": "허리 구조, 지퍼와 여밈, 포켓과 봉제선 등 실제 입었을 때의 편안함과 완성도를 함께 고려했습니다.",
+        "uses": "일상 외출|매일 입기 좋은 기본 팬츠\n모임 코디|상의를 단정하게 받쳐주는 스타일\n여행·나들이|오래 입어도 부담이 적은 착용감\n다양한 상의 매치|코디 활용도가 높은 아이템",
+        "specs": "제품명|팬츠 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "조끼형": {
+        "main_title": "가볍게 더해 완성하는 실용적인 조끼",
+        "main_subtitle": "가벼운 레이어드만으로도 분위기를 정돈해 주는 조끼형 아이템을 소개합니다.",
+        "look_description": "이너 위에 부담 없이 걸치기 좋으면서도 전체 코디가 정리되어 보이도록 실루엣을 구성했습니다.",
+        "point1_title": "레이어드하기 좋은 활용성",
+        "point1_text": "블라우스, 티셔츠, 원피스 위에 자연스럽게 더해 코디의 폭을 넓혀 줍니다.",
+        "point2_title": "가볍고 실용적인 착용",
+        "point2_text": "답답하지 않게 걸치기 좋고 계절 변화에 따라 다양하게 연출할 수 있습니다.",
+        "point3_title": "코디를 정리하는 포인트",
+        "point3_text": "단조로운 차림에도 은근한 포인트를 더해 전체 인상을 차분하게 정리해 줍니다.",
+        "point4_title": "작은 구조까지 살핀 완성도",
+        "point4_text": "암홀, 앞여밈, 포켓과 밑단처럼 조끼의 활용도를 결정하는 부분까지 꼼꼼하게 살폈습니다.",
+        "fabric_title": "겹쳐 입기 좋은 소재감",
+        "fabric_text": "이너와 함께 입었을 때 답답하지 않으면서도 조끼 특유의 존재감이 자연스럽게 살아나도록 소재를 구성했습니다.",
+        "button_title": "레이어드 아이템의 분위기를 살리는 디테일",
+        "button_text": "여밈, 포켓, 절개선 등 조끼의 실용성과 분위기를 좌우하는 디테일을 균형 있게 정리했습니다.",
+        "uses": "가벼운 외출|간단히 더해 완성하는 코디\n레이어드 스타일|이너 위에 자연스럽게 매치\n간절기 활용|실용성과 분위기를 함께 챙기는 아이템\n모임 코디|은근한 포인트를 더하는 스타일",
+        "specs": "제품명|조끼 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+    "아우터형": {
+        "main_title": "가볍게 걸쳐 분위기를 완성하는 아우터",
+        "main_subtitle": "한 겹 더하는 것만으로도 인상과 실용성을 함께 챙길 수 있는 아우터를 소개합니다.",
+        "look_description": "이너 위에 자연스럽게 걸쳐졌을 때 전체 비율이 안정감 있게 보이도록 실루엣과 길이감을 고려했습니다.",
+        "point1_title": "걸치기 좋은 실용성",
+        "point1_text": "계절 변화나 실내외 온도차에 대응하기 좋고 자주 활용할 수 있습니다.",
+        "point2_title": "코디를 완성하는 존재감",
+        "point2_text": "가벼운 이너 위에 걸쳐도 전체 차림이 단정하게 정리됩니다.",
+        "point3_title": "다양한 스타일링 가능",
+        "point3_text": "데일리, 모임, 외출 등 여러 상황에 맞춰 폭넓게 활용할 수 있습니다.",
+        "point4_title": "겉옷일수록 중요한 마감",
+        "point4_text": "카라, 여밈, 포켓, 소매와 밑단 등 눈에 잘 띄는 부분까지 안정감 있게 완성했습니다.",
+        "fabric_title": "아우터의 분위기를 살리는 소재",
+        "fabric_text": "무게감과 촉감, 형태감을 함께 고려해 걸쳤을 때 자연스럽고 단정한 인상이 살아나도록 구성했습니다.",
+        "button_title": "아우터의 인상을 결정하는 디테일",
+        "button_text": "단추와 지퍼, 절개와 포켓, 카라와 마감처럼 전체 분위기를 좌우하는 요소를 세심하게 살폈습니다.",
+        "uses": "일상 외출|가볍게 걸치기 좋은 아우터\n간절기 코디|온도차에 대응하는 실용성\n모임·식사 자리|단정함을 더하는 마무리\n여행·나들이|활용도 높은 겉옷 아이템",
+        "specs": "제품명|아우터 상품명 입력\n색상|색상 입력\n사이즈|사이즈 입력\n소재|혼용률 입력\n제조국|대한민국\n제조자|판매자 협력업체\n세탁방법|세탁방법 입력\n기타|필요 정보 입력",
+    },
+}
+
+
 def initialize_state() -> None:
     for key, value in DEFAULTS.items():
         st.session_state.setdefault(key, value)
@@ -205,9 +400,16 @@ def apply_detail_mode(mode: str) -> None:
     else:
         st.session_state["story_enabled"] = True
         st.session_state["group_order_enabled"] = True
-        st.session_state["main_subtitle"] = "부담 없이 손이 가고, 입었을 때 분위기까지 자연스럽게 정돈되는 한 벌을 소개합니다."
+        st.session_state["main_subtitle"] = "국내원단과 국내제작의 진정성을 바탕으로, 입는 순간의 편안함과 단정한 분위기를 함께 전하는 한 벌을 소개합니다."
         st.session_state["footer_title"] = "잘 차려입은 하루는, 옷에서 시작됩니다"
-        st.session_state["footer_text"] = "편안하게 입고도 단정해 보이는 옷, 오래 두고 자연스럽게 손이 가는 국내제작 여성복을 제안합니다."
+        st.session_state["footer_text"] = "브랜드 스토리의 진정성과 판매 포인트를 함께 담아, 보고 공감하고 실제로 만족할 수 있는 상품으로 제안합니다."
+
+
+def apply_product_preset(preset_name: str) -> None:
+    preset = PRODUCT_PRESETS[preset_name]
+    st.session_state["product_type_preset"] = preset_name
+    for key, value in preset.items():
+        st.session_state[key] = value
 
 
 def show_uploaded_preview(files: List, columns: int = 4) -> None:
@@ -230,9 +432,9 @@ st.caption("버튼 한 번으로 섹션 구성 방향을 바꿀 수 있습니다
 mode_cols = st.columns(3)
 mode_labels = ["스토리형 상세페이지", "판매집중형 상세페이지", "혼합형 상세페이지"]
 mode_desc = {
-    "스토리형 상세페이지": "브랜드 스토리와 제작 철학을 앞쪽에 배치합니다.",
-    "판매집중형 상세페이지": "핵심 장점과 구매 정보 중심으로 간결하게 구성합니다.",
-    "혼합형 상세페이지": "스토리와 판매 포인트를 균형 있게 함께 보여줍니다.",
+    "스토리형 상세페이지": "브랜드 스토리와 제작 철학을 가장 앞쪽에 배치합니다.",
+    "판매집중형 상세페이지": "핵심 장점과 구매 정보 중심으로 빠르게 설득하는 구성입니다.",
+    "혼합형 상세페이지": "스토리를 위쪽에 두고 판매 포인트도 함께 살리는 균형형 구성입니다.",
 }
 for col, label in zip(mode_cols, mode_labels):
     with col:
@@ -242,11 +444,25 @@ for col, label in zip(mode_cols, mode_labels):
             st.rerun()
 st.info(f"현재 적용 모드: {st.session_state.get('detail_page_mode', '혼합형 상세페이지')}")
 
+st.subheader("상품 종류 빠른 선택")
+st.caption("상품군에 맞는 기본 문구를 버튼 한 번으로 적용합니다. 적용 후 세부 문구는 자유롭게 수정할 수 있습니다.")
+preset_labels = ["블라우스형", "원피스형", "재킷형", "티셔츠형", "팬츠형", "조끼형", "아우터형"]
+for row_start in range(0, len(preset_labels), 4):
+    cols = st.columns(4)
+    for col, label in zip(cols, preset_labels[row_start:row_start+4]):
+        with col:
+            if st.button(label, use_container_width=True):
+                apply_product_preset(label)
+                st.rerun()
+st.info(f"현재 적용 상품군: {st.session_state.get('product_type_preset', '블라우스형')}")
+
 with st.sidebar:
     st.header("1. 디자인 설정")
     st.caption(f"현재 모드: {st.session_state.get('detail_page_mode', '혼합형 상세페이지')}")
+    st.caption(f"현재 상품군: {st.session_state.get('product_type_preset', '블라우스형')}")
     st.selectbox("상세페이지 테마", list(THEMES.keys()), key="theme")
     st.info(THEMES[st.session_state.theme]["description"])
+    st.caption("브랜드 스토리를 강조하려면 클래식 아이보리, 세이지 그린, 테라코타 브라운이 잘 어울립니다.")
     st.selectbox("본문 폰트", FONTS, key="body_font")
     st.selectbox("제목 폰트", FONTS, key="heading_font")
     st.slider("완성 JPG 가로폭", 720, 1000, key="page_width", step=10)

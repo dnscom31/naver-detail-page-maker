@@ -916,13 +916,13 @@ def build_detail_jpg(
         blocks.append(styling_block)
         blocks.append(gallery_block)
     else:
+        blocks.append(korea_block)
+        blocks.append(story_block)
         blocks.append(problem_block)
         blocks.extend(silhouette_blocks)
         blocks.extend(detail_blocks)
-        blocks.append(korea_block)
-        blocks.append(story_block)
-        blocks.append(group_order_block)
         blocks.append(uses_block)
+        blocks.append(group_order_block)
         blocks.append(styling_block)
         blocks.append(gallery_block)
 
