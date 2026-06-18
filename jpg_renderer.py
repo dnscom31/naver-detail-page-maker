@@ -820,12 +820,16 @@ def build_detail_jpg(
         specs.append([left.strip(), right.strip()])
     notices = [line.strip() for line in config["notices"].splitlines() if line.strip()]
 
-    blocks: List[Image.Image | None] = []
-    blocks.extend(make_hero(width, theme, config, core_images.get("hero")))
-    blocks.append(make_badges(width, theme, config))
-    blocks.append(make_list_section(width, theme, config, "FOR YOU", "이런 옷을 찾고 계셨나요?", problems, True))
+    mode = config.get("detail_page_mode", "혼합형 상세페이지")
 
-    blocks.append(
+    hero_blocks: List[Image.Image | None] = []
+    hero_blocks.extend(make_hero(width, theme, config, core_images.get("hero")))
+    hero_blocks.append(make_badges(width, theme, config))
+
+    problem_block = make_list_section(width, theme, config, "FOR YOU", "이런 옷을 찾고 계셨나요?", problems, True)
+
+    silhouette_blocks: List[Image.Image | None] = []
+    silhouette_blocks.append(
         make_heading_block(
             width,
             theme["section_bg"],
@@ -842,13 +846,13 @@ def build_detail_jpg(
             base_size=config["base_font_size"],
         )
     )
-    blocks.append(make_full_image_block(core_images.get("front"), width, theme["section_bg"], 1250))
-    blocks.append(make_two_image_block(core_images.get("angle"), core_images.get("back"), width, theme["section_bg"], max_height=900))
-    blocks.append(make_gallery(extra_model_images, width, theme["section_bg"], columns=2, max_height=900))
+    silhouette_blocks.append(make_full_image_block(core_images.get("front"), width, theme["section_bg"], 1250))
+    silhouette_blocks.append(make_two_image_block(core_images.get("angle"), core_images.get("back"), width, theme["section_bg"], max_height=900))
+    silhouette_blocks.append(make_gallery(extra_model_images, width, theme["section_bg"], columns=2, max_height=900))
 
-    blocks.append(make_points_section(width, theme, config))
-
-    blocks.append(
+    detail_blocks: List[Image.Image | None] = []
+    detail_blocks.append(make_points_section(width, theme, config))
+    detail_blocks.append(
         make_heading_block(
             width,
             theme["section_bg"],
@@ -866,30 +870,67 @@ def build_detail_jpg(
     )
     fabric = make_full_image_block(core_images.get("fabric"), width, theme["section_bg"], 1100)
     if fabric is not None:
-        blocks.append(fabric)
-    blocks.append(make_copy_block(width, theme, config, config["fabric_title"], config["fabric_text"]))
+        detail_blocks.append(fabric)
+    detail_blocks.append(make_copy_block(width, theme, config, config["fabric_title"], config["fabric_text"]))
     button = make_full_image_block(core_images.get("button"), width, theme["section_bg"], 1100)
     if button is not None:
-        blocks.append(button)
-    blocks.append(make_copy_block(width, theme, config, config["button_title"], config["button_text"]))
-    blocks.append(make_two_image_block(core_images.get("collar"), core_images.get("sleeve"), width, theme["section_bg"], max_height=900))
-    blocks.append(make_gallery(extra_detail_images, width, theme["section_bg"], columns=1, max_height=950))
+        detail_blocks.append(button)
+    detail_blocks.append(make_copy_block(width, theme, config, config["button_title"], config["button_text"]))
+    detail_blocks.append(make_two_image_block(core_images.get("collar"), core_images.get("sleeve"), width, theme["section_bg"], max_height=900))
+    detail_blocks.append(make_gallery(extra_detail_images, width, theme["section_bg"], columns=1, max_height=950))
 
-    blocks.append(make_full_image_block(core_images.get("korea"), width, theme["soft_bg"], 1100))
-    if config.get("story_enabled", True):
-        blocks.append(make_story_section(width, theme, config))
-    if config.get("group_order_enabled", True):
-        blocks.append(make_group_order_section(width, theme, config))
+    korea_block = make_full_image_block(core_images.get("korea"), width, theme["soft_bg"], 1100)
+    story_block = make_story_section(width, theme, config) if config.get("story_enabled", True) else None
+    group_order_block = make_group_order_section(width, theme, config) if config.get("group_order_enabled", True) else None
+    uses_block = make_uses_section(width, theme, config, uses)
+    styling_block = make_full_image_block(core_images.get("styling"), width, theme["section_bg"], 1200)
+    gallery_block = make_gallery(extra_gallery_images, width, theme["section_bg"], columns=1, max_height=950)
+    info_block = make_table_section(width, theme, config, "PRODUCT INFO", "상품 정보", specs, True)
+    size_block = make_size_section(width, theme, config)
+    size_image_block = make_full_image_block(core_images.get("size"), width, theme["section_bg"], 1100)
+    notice_block = make_notice_section(width, theme, config, notices)
+    footer_block = make_footer(width, theme, config)
 
-    blocks.append(make_uses_section(width, theme, config, uses))
-    blocks.append(make_full_image_block(core_images.get("styling"), width, theme["section_bg"], 1200))
-    blocks.append(make_gallery(extra_gallery_images, width, theme["section_bg"], columns=1, max_height=950))
+    blocks: List[Image.Image | None] = []
+    blocks.extend(hero_blocks)
 
-    blocks.append(make_table_section(width, theme, config, "PRODUCT INFO", "상품 정보", specs, True))
-    blocks.append(make_size_section(width, theme, config))
-    blocks.append(make_full_image_block(core_images.get("size"), width, theme["section_bg"], 1100))
-    blocks.append(make_notice_section(width, theme, config, notices))
-    blocks.append(make_footer(width, theme, config))
+    if mode == "스토리형 상세페이지":
+        blocks.append(korea_block)
+        blocks.append(story_block)
+        blocks.append(problem_block)
+        blocks.extend(silhouette_blocks)
+        blocks.extend(detail_blocks)
+        blocks.append(uses_block)
+        blocks.append(styling_block)
+        blocks.append(gallery_block)
+        blocks.append(group_order_block)
+    elif mode == "판매집중형 상세페이지":
+        blocks.append(problem_block)
+        blocks.extend(silhouette_blocks)
+        blocks.extend(detail_blocks)
+        blocks.append(korea_block)
+        blocks.append(uses_block)
+        blocks.append(group_order_block)
+        if config.get("story_enabled", False):
+            blocks.append(story_block)
+        blocks.append(styling_block)
+        blocks.append(gallery_block)
+    else:
+        blocks.append(problem_block)
+        blocks.extend(silhouette_blocks)
+        blocks.extend(detail_blocks)
+        blocks.append(korea_block)
+        blocks.append(story_block)
+        blocks.append(group_order_block)
+        blocks.append(uses_block)
+        blocks.append(styling_block)
+        blocks.append(gallery_block)
+
+    blocks.append(info_block)
+    blocks.append(size_block)
+    blocks.append(size_image_block)
+    blocks.append(notice_block)
+    blocks.append(footer_block)
 
     final = stitch(blocks, width, theme["page_bg"])
     if final.height > MAX_JPEG_HEIGHT:

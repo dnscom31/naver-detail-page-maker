@@ -101,6 +101,7 @@ DEFAULTS = {
     "base_font_size": 17,
     "section_spacing": 72,
     "jpg_quality": 90,
+    "detail_page_mode": "혼합형 상세페이지",
     "brand_line": "KOREAN FABRIC · MADE IN KOREA",
     "main_title": "편안하게 입고\n단정하게 완성되는 옷",
     "main_subtitle": "부담 없이 손이 가고, 입었을 때 분위기까지 자연스럽게 정돈되는 한 벌을 소개합니다.",
@@ -168,6 +169,7 @@ DEFAULTS = {
     "notices": "\n".join([
         "모니터 환경과 촬영 조명에 따라 실제 색상이 다르게 보일 수 있습니다.",
         "디자인과 소재 특성에 따라 디테일 표현이 상품마다 조금씩 달라질 수 있습니다.",
+        "원단 특성상 나염의 위치와 배열은 상품마다 조금씩 다를 수 있으며, 모든 상품이 동일하지 않습니다.",
         "실측 사이즈는 측정 위치와 방법에 따라 1~3cm 오차가 발생할 수 있습니다.",
         "첫 세탁 전 반드시 상품의 케어라벨과 세탁 안내를 확인해 주세요.",
         "장시간 마찰이나 강한 열은 소재 손상의 원인이 될 수 있습니다.",
@@ -186,6 +188,28 @@ def current_config() -> Dict:
     return {key: st.session_state.get(key, value) for key, value in DEFAULTS.items()}
 
 
+def apply_detail_mode(mode: str) -> None:
+    st.session_state["detail_page_mode"] = mode
+    if mode == "스토리형 상세페이지":
+        st.session_state["story_enabled"] = True
+        st.session_state["group_order_enabled"] = True
+        st.session_state["main_subtitle"] = "국내원단과 국내제작의 진정성을 바탕으로, 오래 입을수록 편안함과 단정한 분위기가 살아나는 한 벌을 소개합니다."
+        st.session_state["footer_title"] = "좋은 옷에는 만드는 마음이 담겨 있습니다"
+        st.session_state["footer_text"] = "좋은 소재와 정직한 제작, 그리고 고객을 생각하는 마음까지 담아 오래 곁에 둘 수 있는 옷을 제안합니다."
+    elif mode == "판매집중형 상세페이지":
+        st.session_state["story_enabled"] = False
+        st.session_state["group_order_enabled"] = True
+        st.session_state["main_subtitle"] = "편안하게 입기 좋고 단정한 인상까지 챙길 수 있도록 소재, 핏, 마감을 균형 있게 담았습니다."
+        st.session_state["footer_title"] = "사진으로 보고, 실제로 입었을 때 더 만족스러운 옷"
+        st.session_state["footer_text"] = "외출부터 모임까지 자연스럽게 활용하기 좋고, 원단과 마감의 완성도까지 꼼꼼하게 확인할 수 있습니다."
+    else:
+        st.session_state["story_enabled"] = True
+        st.session_state["group_order_enabled"] = True
+        st.session_state["main_subtitle"] = "부담 없이 손이 가고, 입었을 때 분위기까지 자연스럽게 정돈되는 한 벌을 소개합니다."
+        st.session_state["footer_title"] = "잘 차려입은 하루는, 옷에서 시작됩니다"
+        st.session_state["footer_text"] = "편안하게 입고도 단정해 보이는 옷, 오래 두고 자연스럽게 손이 가는 국내제작 여성복을 제안합니다."
+
+
 def show_uploaded_preview(files: List, columns: int = 4) -> None:
     if not files:
         return
@@ -201,8 +225,26 @@ initialize_state()
 st.title("네이버 상세페이지 JPG 자동 제작기")
 st.caption("테마·문구·사진을 설정한 뒤 생성 버튼을 누르면 네이버 업로드용 긴 JPG가 바로 만들어집니다.")
 
+st.subheader("상세페이지 모드 빠른 선택")
+st.caption("버튼 한 번으로 섹션 구성 방향을 바꿀 수 있습니다. 선택 후에도 모든 문구는 자유롭게 수정할 수 있습니다.")
+mode_cols = st.columns(3)
+mode_labels = ["스토리형 상세페이지", "판매집중형 상세페이지", "혼합형 상세페이지"]
+mode_desc = {
+    "스토리형 상세페이지": "브랜드 스토리와 제작 철학을 앞쪽에 배치합니다.",
+    "판매집중형 상세페이지": "핵심 장점과 구매 정보 중심으로 간결하게 구성합니다.",
+    "혼합형 상세페이지": "스토리와 판매 포인트를 균형 있게 함께 보여줍니다.",
+}
+for col, label in zip(mode_cols, mode_labels):
+    with col:
+        st.caption(mode_desc[label])
+        if st.button(label, use_container_width=True):
+            apply_detail_mode(label)
+            st.rerun()
+st.info(f"현재 적용 모드: {st.session_state.get('detail_page_mode', '혼합형 상세페이지')}")
+
 with st.sidebar:
     st.header("1. 디자인 설정")
+    st.caption(f"현재 모드: {st.session_state.get('detail_page_mode', '혼합형 상세페이지')}")
     st.selectbox("상세페이지 테마", list(THEMES.keys()), key="theme")
     st.info(THEMES[st.session_state.theme]["description"])
     st.selectbox("본문 폰트", FONTS, key="body_font")
@@ -333,7 +375,8 @@ with tab3:
             st.text_input(label, key=key)
 
     st.subheader("구매 전 안내")
-    st.text_area("한 줄에 한 항목씩 입력", key="notices", height=200)
+    st.info("나염 패턴 제품은 같은 원단이라도 위치와 배열이 조금씩 다를 수 있다는 안내 문구를 기본으로 포함했습니다.")
+    st.text_area("한 줄에 한 항목씩 입력", key="notices", height=220)
 
 with tab4:
     st.subheader("기본 배치 사진")
