@@ -160,11 +160,13 @@ DEFAULTS = {
     "jpg_quality": 90,
     "detail_page_mode": "혼합형 상세페이지",
     "product_type_preset": "블라우스형",
+    "copy_style_preset": "균형형",
+    "product_name_input": "",
     "brand_line": "KOREAN FABRIC · MADE IN KOREA",
     "main_title": "편안하게 입고\n단정하게 완성되는 옷",
     "main_subtitle": "부담 없이 손이 가고, 입었을 때 분위기까지 자연스럽게 정돈되는 한 벌을 소개합니다.",
     "badge1_title": "국내원단",
-    "badge1_text": "촉감과 조직감, 완성도를 고려해 고른 소재",
+    "badge1_text": "촉감과 조직감, 완성도를 고려한 소재",
     "badge2_title": "100% 국내제작",
     "badge2_text": "국내 재단·봉제·마감으로 완성",
     "badge3_title": "편안한 옷맵시",
@@ -374,6 +376,147 @@ PRODUCT_PRESETS = {
 }
 
 
+PRODUCT_STYLE_META = {
+    "블라우스형": {"noun": "블라우스", "usage": "외출, 모임, 식사 자리"},
+    "원피스형": {"noun": "원피스", "usage": "외출, 모임, 여행"},
+    "재킷형": {"noun": "재킷", "usage": "격식 있는 외출, 모임, 간절기 코디"},
+    "티셔츠형": {"noun": "티셔츠", "usage": "일상 외출, 레이어드, 여행"},
+    "팬츠형": {"noun": "팬츠", "usage": "일상 외출, 모임 코디, 여행"},
+    "조끼형": {"noun": "조끼", "usage": "레이어드 코디, 간절기 외출, 모임"},
+    "아우터형": {"noun": "아우터", "usage": "간절기 외출, 모임, 여행"},
+}
+
+
+def generate_style_overrides(product_type: str, style_name: str) -> Dict[str, str]:
+    if style_name == "균형형":
+        return {}
+
+    meta = PRODUCT_STYLE_META.get(product_type, {"noun": "아이템", "usage": "다양한 일상"})
+    noun = meta["noun"]
+    usage = meta["usage"]
+
+    if style_name == "감성형":
+        return {
+            "main_title": f"입을수록 마음이 편해지는\n{noun}",
+            "main_subtitle": f"보는 순간보다 직접 입었을 때 더 편안하고 더 자연스럽게 손이 가는 {noun}를 소개합니다.",
+            "point1_title": "기분 좋게 입는 편안함",
+            "point1_text": f"몸을 답답하게 조이지 않으면서도 하루 종일 부담 없이 함께하기 좋은 {noun}를 생각했습니다.",
+            "point2_title": "차분하게 정돈되는 분위기",
+            "point2_text": "과하게 꾸미지 않아도 전체 인상이 단정하게 정리되어 여러 자리에 자연스럽게 어울립니다.",
+            "point3_title": "자주 손이 가는 활용도",
+            "point3_text": f"{usage}처럼 일상 속 다양한 순간에 부담 없이 꺼내 입기 좋은 구성을 담았습니다.",
+            "point4_title": "오래 두고 싶은 완성도",
+            "point4_text": "한 번 보고 지나가는 옷보다 입을수록 만족이 남도록 소재와 마감을 차분하게 살폈습니다.",
+            "fabric_title": "편안함을 먼저 느끼게 하는 소재",
+            "fabric_text": "직접 닿았을 때의 촉감과 착용했을 때의 분위기를 함께 생각해, 부담 없이 손이 가는 소재감으로 완성했습니다.",
+            "button_title": "전체 인상을 다듬는 디테일",
+            "button_text": f"{noun}의 분위기를 해치지 않도록 여밈과 절개, 작은 장식과 마감까지 자연스럽게 어우러지게 정리했습니다.",
+            "footer_title": "오래 입게 되는 옷에는 이유가 있습니다",
+            "footer_text": f"처음의 인상보다 입었을 때의 편안함과 만족감이 오래 남는 {noun}로 제안합니다.",
+        }
+
+    if style_name == "신뢰형":
+        return {
+            "main_title": f"원단과 마감의 완성도를 담은\n{noun}",
+            "main_subtitle": f"국내원단과 국내제작을 바탕으로 착용감, 실루엣, 마감 완성도를 균형 있게 살펴 완성한 {noun}입니다.",
+            "point1_title": "안정감 있는 소재 선택",
+            "point1_text": "촉감과 조직감, 색감의 안정성을 함께 살펴 실제 착용 만족도를 고려했습니다.",
+            "point2_title": "균형감 있는 실루엣",
+            "point2_text": f"{noun} 본연의 장점이 잘 살아나면서도 과하지 않게 단정한 인상을 전하도록 설계했습니다.",
+            "point3_title": "세심하게 본 디테일",
+            "point3_text": "여밈과 봉제선, 절개와 마감처럼 작은 부분까지 전체 완성도를 기준으로 정리했습니다.",
+            "point4_title": "실제로 느껴지는 품질감",
+            "point4_text": "사진으로 보이는 인상뿐 아니라 가까이에서 봤을 때의 소재감과 마감 상태까지 중요하게 생각했습니다.",
+            "fabric_title": "소재부터 꼼꼼하게 살핀 구성",
+            "fabric_text": f"{noun}에 어울리는 조직감과 밀도, 촉감을 고려해 실제 착용 시 안정감 있게 느껴질 수 있도록 구성했습니다.",
+            "button_title": "완성도를 높이는 구조와 마감",
+            "button_text": "단추, 지퍼, 절개, 포켓, 봉제와 밑단처럼 눈에 잘 띄는 부분까지 균형 있게 마무리했습니다.",
+            "footer_title": "좋은 옷은 소재와 마감에서 차이가 납니다",
+            "footer_text": f"보이는 디자인뿐 아니라 실제로 느껴지는 완성도까지 확인할 수 있는 {noun}로 준비했습니다.",
+        }
+
+    if style_name == "판매형":
+        return {
+            "main_title": f"편안하고 활용도 높은\n{noun}",
+            "main_subtitle": f"입기 편하고 코디하기 쉬우며, 여러 자리에서 단정한 인상까지 챙길 수 있도록 구성한 {noun}입니다.",
+            "point1_title": "입기 편한 착용감",
+            "point1_text": f"오랜 시간 착용해도 부담이 덜해 자주 손이 가는 {noun}를 찾는 분께 잘 어울립니다.",
+            "point2_title": "코디하기 쉬운 디자인",
+            "point2_text": "과하지 않은 디자인으로 평소 입는 아이템과 자연스럽게 매치하기 좋습니다.",
+            "point3_title": "여러 상황에 잘 어울림",
+            "point3_text": f"{usage}처럼 활용 범위가 넓어 한 번 구입해 두면 두루 입기 좋습니다.",
+            "point4_title": "구매 후 만족을 생각한 디테일",
+            "point4_text": "사진에서 보이는 분위기와 실제로 입었을 때의 편안함이 함께 느껴지도록 마무리했습니다.",
+            "fabric_title": "실용성을 생각한 소재감",
+            "fabric_text": "부담 없이 입기 좋고 코디하기 쉬운 분위기를 고려해 일상에서 활용도 높은 소재감으로 완성했습니다.",
+            "button_title": "구매 만족도를 높이는 포인트",
+            "button_text": f"{noun}의 전체 인상을 정리해 주는 여밈과 절개, 마감 디테일까지 균형 있게 담았습니다.",
+            "footer_title": "자주 입게 될 옷은 편안함과 활용도가 중요합니다",
+            "footer_text": f"일상에서 손이 자주 가고, 여러 자리에서 자연스럽게 활용하기 좋은 {noun}로 추천합니다.",
+        }
+
+    return {}
+
+
+
+
+def generate_name_suggestions(product_name: str, product_type: str, style_name: str) -> tuple[List[str], List[str]]:
+    """상품명, 상품군, 문구 스타일을 이용해 제목과 메인설명 3안을 만듭니다."""
+    clean_name = " ".join(str(product_name).split()).strip()
+    meta = PRODUCT_STYLE_META.get(product_type, {"noun": "아이템", "usage": "다양한 일상"})
+    noun = meta["noun"]
+    usage = meta["usage"]
+    target_name = clean_name or noun
+
+    if style_name == "감성형":
+        titles = [
+            f"입을수록 마음이 편해지는\n{target_name}",
+            f"단정한 하루를 완성하는\n{target_name}",
+            f"오래 두고 자연스럽게 손이 가는\n{target_name}",
+        ]
+        descriptions = [
+            f"보는 순간보다 직접 입었을 때 더 편안하고, 과하게 꾸미지 않아도 분위기가 자연스럽게 정돈되는 {target_name}입니다.",
+            f"몸에 부담은 덜고 차분한 인상은 살려, {usage}처럼 일상의 여러 순간에 기분 좋게 함께할 수 있도록 만들었습니다.",
+            f"처음의 화려함보다 입을수록 남는 편안함과 만족을 생각해 소재, 실루엣, 작은 마감까지 차분하게 담았습니다.",
+        ]
+    elif style_name == "신뢰형":
+        titles = [
+            f"국내원단과 국내제작으로 완성한\n{target_name}",
+            f"원단과 마감을 꼼꼼하게 살핀\n{target_name}",
+            f"가까이에서 더 느껴지는 완성도\n{target_name}",
+        ]
+        descriptions = [
+            f"촉감과 조직감, 봉제와 마감까지 실제 착용 만족도를 기준으로 살펴 국내에서 완성한 {target_name}입니다.",
+            f"사진으로 보이는 디자인뿐 아니라 가까이에서 확인되는 소재감과 여밈, 절개, 마감 상태까지 균형 있게 살폈습니다.",
+            f"국내원단의 안정적인 조직감과 숙련된 제작 과정을 바탕으로, 오래 입어도 흐트러지지 않는 인상을 전하도록 구성했습니다.",
+        ]
+    elif style_name == "판매형":
+        titles = [
+            f"편안하고 활용도 높은\n{target_name}",
+            f"외출부터 모임까지 두루 입는\n{target_name}",
+            f"코디하기 쉽고 단정한\n{target_name}",
+        ]
+        descriptions = [
+            f"입기 편하고 코디하기 쉬우며, {usage}에 자연스럽게 어울려 한 번 마련해 두면 자주 활용하기 좋은 {target_name}입니다.",
+            f"몸에 부담을 덜어주는 착용감과 단정한 실루엣을 함께 담아 평소 외출부터 조금 더 격식을 갖춘 자리까지 폭넓게 입기 좋습니다.",
+            f"과하지 않은 디자인과 안정적인 핏, 꼼꼼한 디테일로 실제로 입었을 때의 편안함과 구매 만족을 함께 생각했습니다.",
+        ]
+    else:
+        titles = [
+            f"편안하게 입고\n단정하게 완성되는 {target_name}",
+            f"소재와 실루엣의 균형을 담은\n{target_name}",
+            f"여러 자리에 자연스럽게 어울리는\n{target_name}",
+        ]
+        descriptions = [
+            f"몸에 부담은 덜고 옷맵시는 자연스럽게 정돈되도록 핏과 디테일을 균형 있게 담은 {target_name}입니다.",
+            f"촉감과 조직감, 전체 실루엣과 마감 완성도를 함께 고려해 편안하면서도 단정한 인상을 전하도록 구성했습니다.",
+            f"{usage}에 자연스럽게 어울리며, 과하게 꾸미지 않아도 차분한 분위기가 살아나 자주 손이 가는 {noun}입니다.",
+        ]
+
+    return titles, descriptions
+
+
+
 def initialize_state() -> None:
     for key, value in DEFAULTS.items():
         st.session_state.setdefault(key, value)
@@ -406,9 +549,28 @@ def apply_detail_mode(mode: str) -> None:
 
 
 def apply_product_preset(preset_name: str) -> None:
+    st.session_state.pop("title_suggestions", None)
+    st.session_state.pop("description_suggestions", None)
     preset = PRODUCT_PRESETS[preset_name]
     st.session_state["product_type_preset"] = preset_name
     for key, value in preset.items():
+        st.session_state[key] = value
+    style_name = st.session_state.get("copy_style_preset", "균형형")
+    overrides = generate_style_overrides(preset_name, style_name)
+    for key, value in overrides.items():
+        st.session_state[key] = value
+
+
+def apply_copy_style(style_name: str) -> None:
+    st.session_state.pop("title_suggestions", None)
+    st.session_state.pop("description_suggestions", None)
+    st.session_state["copy_style_preset"] = style_name
+    preset_name = st.session_state.get("product_type_preset", "블라우스형")
+    base = PRODUCT_PRESETS[preset_name]
+    for key, value in base.items():
+        st.session_state[key] = value
+    overrides = generate_style_overrides(preset_name, style_name)
+    for key, value in overrides.items():
         st.session_state[key] = value
 
 
@@ -456,10 +618,77 @@ for row_start in range(0, len(preset_labels), 4):
                 st.rerun()
 st.info(f"현재 적용 상품군: {st.session_state.get('product_type_preset', '블라우스형')}")
 
+st.subheader("문구 스타일 빠른 선택")
+st.caption("같은 상품군이라도 원하는 느낌이 다를 수 있으니, 설명 톤을 선택해서 바로 적용할 수 있습니다.")
+style_labels = ["균형형", "감성형", "신뢰형", "판매형"]
+style_desc = {
+    "균형형": "감성과 실용성을 균형 있게 담은 기본 문구",
+    "감성형": "공감과 분위기를 조금 더 살린 문구",
+    "신뢰형": "원단·마감·국내제작 신뢰감을 강조한 문구",
+    "판매형": "활용도와 구매 장점을 빠르게 전달하는 문구",
+}
+style_cols = st.columns(4)
+for col, label in zip(style_cols, style_labels):
+    with col:
+        st.caption(style_desc[label])
+        if st.button(label, use_container_width=True):
+            apply_copy_style(label)
+            st.rerun()
+st.info(f"현재 적용 문구 스타일: {st.session_state.get('copy_style_preset', '균형형')}")
+
+st.subheader("상품명 기반 제목·메인설명 추천")
+st.caption("상품명을 입력하면 현재 선택한 상품군과 문구 스타일을 반영해 제목 3안과 메인설명 3안을 만듭니다.")
+name_col, button_col = st.columns([4, 1])
+with name_col:
+    st.text_input(
+        "상품명 입력",
+        key="product_name_input",
+        placeholder="예: 국내제작 플라워 시스루 롱블라우스",
+    )
+with button_col:
+    st.write("")
+    st.write("")
+    if st.button("추천 3안 생성", type="primary", use_container_width=True):
+        product_name = st.session_state.get("product_name_input", "").strip()
+        if not product_name:
+            st.warning("상품명을 먼저 입력해 주세요.")
+        else:
+            title_options, description_options = generate_name_suggestions(
+                product_name,
+                st.session_state.get("product_type_preset", "블라우스형"),
+                st.session_state.get("copy_style_preset", "균형형"),
+            )
+            st.session_state["title_suggestions"] = title_options
+            st.session_state["description_suggestions"] = description_options
+
+if st.session_state.get("title_suggestions"):
+    st.markdown("#### 제목 추천 3안")
+    title_cols = st.columns(3)
+    for index, (col, suggestion) in enumerate(zip(title_cols, st.session_state["title_suggestions"]), 1):
+        with col:
+            st.text_area(f"제목 {index}안", value=suggestion, height=95, disabled=True, key=f"title_preview_{index}")
+            if st.button(f"제목 {index}안 적용", use_container_width=True, key=f"apply_title_{index}"):
+                st.session_state["main_title"] = suggestion
+                st.rerun()
+
+if st.session_state.get("description_suggestions"):
+    st.markdown("#### 메인설명 추천 3안")
+    desc_cols = st.columns(3)
+    for index, (col, suggestion) in enumerate(zip(desc_cols, st.session_state["description_suggestions"]), 1):
+        with col:
+            st.text_area(f"메인설명 {index}안", value=suggestion, height=145, disabled=True, key=f"desc_preview_{index}")
+            if st.button(f"설명 {index}안 적용", use_container_width=True, key=f"apply_desc_{index}"):
+                st.session_state["main_subtitle"] = suggestion
+                st.rerun()
+
+if st.session_state.get("title_suggestions") and st.session_state.get("description_suggestions"):
+    st.caption("같은 번호끼리 묶어 써도 되고, 제목과 설명을 서로 다른 번호로 조합해도 됩니다.")
+
 with st.sidebar:
     st.header("1. 디자인 설정")
     st.caption(f"현재 모드: {st.session_state.get('detail_page_mode', '혼합형 상세페이지')}")
     st.caption(f"현재 상품군: {st.session_state.get('product_type_preset', '블라우스형')}")
+    st.caption(f"현재 문구 스타일: {st.session_state.get('copy_style_preset', '균형형')}")
     st.selectbox("상세페이지 테마", list(THEMES.keys()), key="theme")
     st.info(THEMES[st.session_state.theme]["description"])
     st.caption("브랜드 스토리를 강조하려면 클래식 아이보리, 세이지 그린, 테라코타 브라운이 잘 어울립니다.")
