@@ -679,30 +679,57 @@ def make_size_section(width: int, theme: Dict[str, str], config: Dict) -> Image.
         padding_bottom=28,
         base_size=config["base_font_size"],
     )
-    headers = ["사이즈", "어깨", "가슴", "소매", "암홀", "총장"]
-    values = [
-        config["size_name"],
-        config["size_shoulder"],
-        config["size_chest"],
-        config["size_sleeve"],
-        config["size_armhole"],
-        config["size_length"],
+
+    headers = ["사이즈"] + [
+        str(config.get(f"size_header_{index}", default)).strip() or default
+        for index, default in enumerate(["어깨", "가슴단면", "소매길이", "암홀", "총장"], 1)
     ]
+
+    row_count = max(1, min(8, int(config.get("size_row_count", 1))))
+    rows = []
+    for row_index in range(1, row_count + 1):
+        if row_index == 1:
+            fallback = [
+                config.get("size_name", "FREE"),
+                config.get("size_shoulder", ""),
+                config.get("size_chest", ""),
+                config.get("size_sleeve", ""),
+                config.get("size_armhole", ""),
+                config.get("size_length", ""),
+            ]
+        else:
+            fallback = ["", "", "", "", "", ""]
+        row = [str(config.get(f"size_{row_index}_name", fallback[0]))]
+        for col_index in range(1, 6):
+            row.append(str(config.get(f"size_{row_index}_{col_index}", fallback[col_index])))
+        rows.append(row)
+
     margin = 24
-    cell_w = (width - margin * 2) // len(headers)
-    header_h, value_h = 58, 64
-    body = solid_block(width, header_h + value_h + 64, theme["section_bg"])
+    column_count = len(headers)
+    cell_w = (width - margin * 2) // column_count
+    header_h = 58
+    row_h = 64
+    body_h = header_h + row_h * len(rows) + 64
+    body = solid_block(width, body_h, theme["section_bg"])
     d = ImageDraw.Draw(body)
     head_font = get_font(config["body_font"], max(13, config["base_font_size"] - 3), bold=True)
-    value_font = get_font(config["body_font"], max(14, config["base_font_size"] - 2))
+    value_font = get_font(config["body_font"], max(13, config["base_font_size"] - 3))
     y = 14
+
     for idx, header in enumerate(headers):
         x = margin + idx * cell_w
-        right = width - margin if idx == len(headers) - 1 else x + cell_w
+        right = width - margin if idx == column_count - 1 else x + cell_w
         d.rectangle((x, y, right, y + header_h), fill=_hex(theme["card_bg"]), outline=_hex(theme["line"]), width=1)
-        d.rectangle((x, y + header_h, right, y + header_h + value_h), fill=_hex(theme["section_bg"]), outline=_hex(theme["line"]), width=1)
         draw_wrapped(d, (x + 6, y + 17), header, head_font, _hex(theme["text"]), right - x - 12, "center", 5)
-        draw_wrapped(d, (x + 6, y + header_h + 18), str(values[idx]), value_font, _hex(theme["text"]), right - x - 12, "center", 5)
+
+    for row_number, row in enumerate(rows):
+        row_y = y + header_h + row_number * row_h
+        for idx, value in enumerate(row):
+            x = margin + idx * cell_w
+            right = width - margin if idx == column_count - 1 else x + cell_w
+            d.rectangle((x, row_y, right, row_y + row_h), fill=_hex(theme["section_bg"]), outline=_hex(theme["line"]), width=1)
+            draw_wrapped(d, (x + 6, row_y + 18), value, value_font, _hex(theme["text"]), right - x - 12, "center", 5)
+
     return stitch([head, body], width, theme["section_bg"])
 
 

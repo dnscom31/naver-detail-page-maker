@@ -17,6 +17,46 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown(
+    """
+    <style>
+    /* 기본 문구·세일 포인트·상품 정보·사진 업로드 탭을 크게 표시 */
+    div[data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    button[role="tab"] {
+        min-height: 66px !important;
+        padding: 14px 28px !important;
+        border-radius: 12px 12px 0 0 !important;
+        background: #f5f2ed !important;
+        border: 1px solid #ded8cf !important;
+        flex: 1 1 0 !important;
+        justify-content: center !important;
+    }
+    button[role="tab"][aria-selected="true"] {
+        background: #9b7644 !important;
+        color: white !important;
+        border-color: #9b7644 !important;
+    }
+    button[role="tab"] p {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        margin: 0 !important;
+    }
+    @media (max-width: 720px) {
+        button[role="tab"] {
+            min-height: 58px !important;
+            padding: 10px 12px !important;
+        }
+        button[role="tab"] p {
+            font-size: 16px !important;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 THEMES = {
     "퓨어 화이트": {
         "description": "화이트 배경과 넓은 여백을 사용하는 가장 깔끔한 상품 중심 테마",
@@ -136,6 +176,7 @@ THEMES = {
 FONTS = ["맑은 고딕", "고딕 계열", "명조 계열", "바탕"]
 
 DEFAULT_KOREA_IMAGE = Path(__file__).resolve().parent / "assets" / "domestic_production.jpg"
+SAVED_DEFAULTS_FILE = Path(__file__).resolve().parent / "saved_defaults.json"
 
 IMAGE_SLOTS = [
     ("hero", "01. 대표 모델 착용컷", "첫 화면을 대표하는 핵심 이미지"),
@@ -157,7 +198,7 @@ DEFAULTS = {
     "page_width": 860,
     "base_font_size": 17,
     "section_spacing": 72,
-    "jpg_quality": 90,
+    "jpg_quality": 95,
     "detail_page_mode": "혼합형 상세페이지",
     "product_type_preset": "블라우스형",
     "copy_style_preset": "균형형",
@@ -226,6 +267,60 @@ DEFAULTS = {
     "size_sleeve": "입력",
     "size_armhole": "입력",
     "size_length": "입력",
+    "size_row_count": 1,
+    "size_header_1": "어깨",
+    "size_header_2": "가슴단면",
+    "size_header_3": "소매길이",
+    "size_header_4": "암홀",
+    "size_header_5": "총장",
+    "size_1_name": "FREE",
+    "size_1_1": "",
+    "size_1_2": "",
+    "size_1_3": "",
+    "size_1_4": "",
+    "size_1_5": "",
+    "size_2_name": "",
+    "size_2_1": "",
+    "size_2_2": "",
+    "size_2_3": "",
+    "size_2_4": "",
+    "size_2_5": "",
+    "size_3_name": "",
+    "size_3_1": "",
+    "size_3_2": "",
+    "size_3_3": "",
+    "size_3_4": "",
+    "size_3_5": "",
+    "size_4_name": "",
+    "size_4_1": "",
+    "size_4_2": "",
+    "size_4_3": "",
+    "size_4_4": "",
+    "size_4_5": "",
+    "size_5_name": "",
+    "size_5_1": "",
+    "size_5_2": "",
+    "size_5_3": "",
+    "size_5_4": "",
+    "size_5_5": "",
+    "size_6_name": "",
+    "size_6_1": "",
+    "size_6_2": "",
+    "size_6_3": "",
+    "size_6_4": "",
+    "size_6_5": "",
+    "size_7_name": "",
+    "size_7_1": "",
+    "size_7_2": "",
+    "size_7_3": "",
+    "size_7_4": "",
+    "size_7_5": "",
+    "size_8_name": "",
+    "size_8_1": "",
+    "size_8_2": "",
+    "size_8_3": "",
+    "size_8_4": "",
+    "size_8_5": "",
     "notices": "\n".join([
         "모니터 환경과 촬영 조명에 따라 실제 색상이 다르게 보일 수 있습니다.",
         "디자인과 소재 특성에 따라 디테일 표현이 상품마다 조금씩 달라질 수 있습니다.",
@@ -387,6 +482,17 @@ PRODUCT_STYLE_META = {
 }
 
 
+SIZE_HEADER_PRESETS = {
+    "블라우스형": ["어깨", "가슴단면", "소매길이", "암홀", "총장"],
+    "원피스형": ["어깨", "가슴단면", "허리단면", "소매길이", "총장"],
+    "재킷형": ["어깨", "가슴단면", "소매길이", "암홀", "총장"],
+    "티셔츠형": ["어깨", "가슴단면", "소매길이", "암홀", "총장"],
+    "팬츠형": ["허리단면", "힙단면", "밑위", "허벅지단면", "총장"],
+    "조끼형": ["어깨", "가슴단면", "암홀", "밑단단면", "총장"],
+    "아우터형": ["어깨", "가슴단면", "소매길이", "암홀", "총장"],
+}
+
+
 def generate_style_overrides(product_type: str, style_name: str) -> Dict[str, str]:
     if style_name == "균형형":
         return {}
@@ -517,13 +623,39 @@ def generate_name_suggestions(product_name: str, product_type: str, style_name: 
 
 
 
+def load_saved_defaults() -> Dict:
+    if not SAVED_DEFAULTS_FILE.exists():
+        return {}
+    try:
+        data = json.loads(SAVED_DEFAULTS_FILE.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
 def initialize_state() -> None:
+    saved = load_saved_defaults()
     for key, value in DEFAULTS.items():
-        st.session_state.setdefault(key, value)
+        st.session_state.setdefault(key, saved.get(key, value))
 
 
 def current_config() -> Dict:
     return {key: st.session_state.get(key, value) for key, value in DEFAULTS.items()}
+
+
+def apply_config_values(values: Dict) -> None:
+    for key, default in DEFAULTS.items():
+        if key in values:
+            st.session_state[key] = values[key]
+        elif key not in st.session_state:
+            st.session_state[key] = default
+
+
+def save_current_as_default() -> None:
+    SAVED_DEFAULTS_FILE.write_text(
+        json.dumps(current_config(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def apply_detail_mode(mode: str) -> None:
@@ -555,6 +687,8 @@ def apply_product_preset(preset_name: str) -> None:
     st.session_state["product_type_preset"] = preset_name
     for key, value in preset.items():
         st.session_state[key] = value
+    for index, header in enumerate(SIZE_HEADER_PRESETS.get(preset_name, []), 1):
+        st.session_state[f"size_header_{index}"] = header
     style_name = st.session_state.get("copy_style_preset", "균형형")
     overrides = generate_style_overrides(preset_name, style_name)
     for key, value in overrides.items():
@@ -698,19 +832,42 @@ with st.sidebar:
     st.slider("기본 글자 크기", 14, 22, key="base_font_size")
     st.slider("구역 간격", 45, 100, key="section_spacing", step=5)
     st.slider("JPG 품질", 80, 95, key="jpg_quality")
+    st.caption("기본값은 최대 품질 95로 설정되어 있습니다.")
 
     st.divider()
-    st.header("설정 저장·불러오기")
-    config_upload = st.file_uploader("이전에 저장한 설정 JSON 불러오기", type=["json"], key="config_upload")
-    if st.button("설정 불러오기", use_container_width=True):
+    st.header("기본값 저장·불러오기")
+    st.caption("문구, 테마, 상품정보, 실측 사이즈를 저장합니다. 업로드한 사진은 기본값에 포함되지 않습니다.")
+    if st.button("현재 입력값을 앱 기본값으로 저장", type="primary", use_container_width=True):
+        try:
+            save_current_as_default()
+            st.session_state["saved_default_config"] = current_config()
+            st.success("현재 입력값을 기본값으로 저장했습니다.")
+        except Exception as exc:
+            st.error(f"기본값 저장 중 오류가 발생했습니다: {exc}")
+
+    if st.button("저장된 기본값 불러오기", use_container_width=True):
+        loaded_defaults = load_saved_defaults() or st.session_state.get("saved_default_config", {})
+        if loaded_defaults:
+            apply_config_values(loaded_defaults)
+            st.success("저장된 기본값을 불러왔습니다.")
+            st.rerun()
+        else:
+            st.warning("저장된 기본값이 없습니다.")
+
+    if st.button("처음 제공된 기본값으로 초기화", use_container_width=True):
+        apply_config_values(DEFAULTS)
+        st.success("처음 제공된 기본값으로 초기화했습니다.")
+        st.rerun()
+
+    st.caption("Streamlit 서버가 재배포되면 앱 내부 저장 파일이 초기화될 수 있으므로, 아래 JSON도 함께 보관하는 것이 안전합니다.")
+    config_upload = st.file_uploader("기본값 또는 설정 JSON 불러오기", type=["json"], key="config_upload")
+    if st.button("선택한 JSON 불러오기", use_container_width=True):
         if config_upload is None:
             st.warning("JSON 파일을 먼저 선택해 주세요.")
         else:
             try:
                 loaded = json.loads(config_upload.getvalue().decode("utf-8"))
-                for key, default in DEFAULTS.items():
-                    if key in loaded:
-                        st.session_state[key] = loaded[key]
+                apply_config_values(loaded)
                 st.success("설정을 불러왔습니다.")
                 st.rerun()
             except Exception as exc:
@@ -718,9 +875,9 @@ with st.sidebar:
 
     config_bytes = json.dumps(current_config(), ensure_ascii=False, indent=2).encode("utf-8")
     st.download_button(
-        "현재 설정 JSON 저장",
+        "현재 기본값 JSON 다운로드",
         data=config_bytes,
-        file_name="상세페이지_설정.json",
+        file_name="상세페이지_기본값.json",
         mime="application/json",
         use_container_width=True,
     )
@@ -806,18 +963,51 @@ with tab3:
     )
 
     st.subheader("실측 사이즈")
-    size_cols = st.columns(6)
-    labels = [
-        ("사이즈", "size_name"),
-        ("어깨", "size_shoulder"),
-        ("가슴단면", "size_chest"),
-        ("소매길이", "size_sleeve"),
-        ("암홀", "size_armhole"),
-        ("총장", "size_length"),
-    ]
-    for col, (label, key) in zip(size_cols, labels):
+    st.caption("상품 종류에 따라 측정 항목명을 바꾸고, 사이즈 칸을 최대 8개까지 추가할 수 있습니다.")
+
+    st.markdown("**측정 항목명**")
+    header_cols = st.columns(5)
+    for index, col in enumerate(header_cols, 1):
         with col:
-            st.text_input(label, key=key)
+            st.text_input(f"항목 {index}", key=f"size_header_{index}")
+
+    control_col1, control_col2, control_col3 = st.columns([1, 1, 3])
+    with control_col1:
+        if st.button("＋ 사이즈 칸 추가", use_container_width=True):
+            st.session_state["size_row_count"] = min(8, int(st.session_state.get("size_row_count", 1)) + 1)
+            st.rerun()
+    with control_col2:
+        if st.button("－ 마지막 칸 삭제", use_container_width=True):
+            st.session_state["size_row_count"] = max(1, int(st.session_state.get("size_row_count", 1)) - 1)
+            st.rerun()
+    with control_col3:
+        st.info(f"현재 {int(st.session_state.get('size_row_count', 1))}개 사이즈 칸을 사용 중입니다.")
+
+    header_names = [st.session_state.get(f"size_header_{i}", "") for i in range(1, 6)]
+    table_header = st.columns([1.1, 1, 1, 1, 1, 1])
+    labels = ["사이즈"] + header_names
+    for col, label in zip(table_header, labels):
+        with col:
+            st.markdown(f"**{label or '항목'}**")
+
+    row_count = int(st.session_state.get("size_row_count", 1))
+    for row_index in range(1, row_count + 1):
+        row_cols = st.columns([1.1, 1, 1, 1, 1, 1])
+        with row_cols[0]:
+            st.text_input(
+                f"사이즈 {row_index}",
+                key=f"size_{row_index}_name",
+                label_visibility="collapsed",
+                placeholder="예: 55 / M / FREE",
+            )
+        for col_index in range(1, 6):
+            with row_cols[col_index]:
+                st.text_input(
+                    f"{row_index}행 {col_index}열",
+                    key=f"size_{row_index}_{col_index}",
+                    label_visibility="collapsed",
+                    placeholder="cm",
+                )
 
     st.subheader("구매 전 안내")
     st.info("나염 패턴 제품은 같은 원단이라도 위치와 배열이 조금씩 다를 수 있다는 안내 문구를 기본으로 포함했습니다.")
