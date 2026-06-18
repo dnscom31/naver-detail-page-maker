@@ -25,3 +25,9 @@ README.md
 ```
 
 Streamlit Community Cloud에서 Main file path는 `app.py`로 설정합니다.
+
+
+## 고정 국내제작 이미지
+
+`assets/domestic_production.jpg`가 모든 상세페이지의 09번 국내제작 구역에 자동으로 삽입됩니다.
+앱 화면에서 해당 이미지를 다시 업로드할 필요가 없습니다. 다른 이미지로 바꾸려면 같은 파일명으로 교체하세요.

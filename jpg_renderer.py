@@ -799,7 +799,6 @@ def build_detail_jpg(
     blocks.append(make_two_image_block(core_images.get("collar"), core_images.get("sleeve"), width, theme["section_bg"], max_height=900))
     blocks.append(make_gallery(extra_detail_images, width, theme["section_bg"], columns=1, max_height=950))
 
-    blocks.append(make_korea_box(width, theme, config))
     blocks.append(make_full_image_block(core_images.get("korea"), width, theme["soft_bg"], 1100))
 
     blocks.append(make_uses_section(width, theme, config, uses))

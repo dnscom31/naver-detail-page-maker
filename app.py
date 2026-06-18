@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from io import BytesIO
+from pathlib import Path
 from typing import Dict, List
 
 import streamlit as st
@@ -76,6 +78,8 @@ THEMES = {
 
 FONTS = ["맑은 고딕", "고딕 계열", "명조 계열", "바탕"]
 
+DEFAULT_KOREA_IMAGE = Path(__file__).resolve().parent / "assets" / "domestic_production.jpg"
+
 IMAGE_SLOTS = [
     ("hero", "01. 대표 모델 착용컷", "첫 화면의 대표 이미지"),
     ("front", "02. 정면 착용컷", "상품 전체 실루엣이 잘 보이는 정면 사진"),
@@ -85,7 +89,6 @@ IMAGE_SLOTS = [
     ("button", "06. 시그니처 단추 접사", "단추의 색상·광택·2홀 구조가 보이는 사진"),
     ("collar", "07. 카라 접사", "카라와 앞여밈 마감 사진"),
     ("sleeve", "08. 소매 접사", "시스루와 소매 길이가 보이는 사진"),
-    ("korea", "09. 국내제작 이미지", "제작 현장, 라벨 또는 신뢰를 주는 이미지"),
     ("styling", "10. 코디 착용컷", "모임·외출 상황을 보여주는 사진"),
     ("size", "11. 사이즈 측정 이미지", "측정 위치를 안내하는 사진"),
 ]
@@ -269,9 +272,8 @@ with tab2:
         st.text_input("단추 제목", key="button_title")
         st.text_area("단추 설명", key="button_text", height=120)
 
-    st.subheader("국내제작 설명")
-    st.text_input("국내제작 제목", key="korea_title")
-    st.text_area("국내제작 설명", key="korea_text", height=100)
+    st.subheader("국내제작 안내")
+    st.info("국내제작 구역은 저장소의 고정 이미지가 자동으로 들어갑니다. 상품마다 다시 업로드할 필요가 없습니다.")
 
     st.subheader("추천 착용 상황")
     st.text_area(
@@ -329,6 +331,13 @@ with tab4:
                 if uploaded is not None:
                     st.image(uploaded, use_container_width=True)
 
+    st.subheader("09. 국내제작 이미지 · 고정 사용")
+    st.caption("아래 이미지는 모든 상세페이지에 자동으로 들어가며 별도 업로드가 필요하지 않습니다.")
+    if DEFAULT_KOREA_IMAGE.exists():
+        st.image(str(DEFAULT_KOREA_IMAGE), use_container_width=True)
+    else:
+        st.error("assets/domestic_production.jpg 파일을 찾을 수 없습니다.")
+
     st.divider()
     st.subheader("추가 사진 여러 장 업로드")
     st.caption(
@@ -368,6 +377,10 @@ st.subheader("상세페이지 JPG 생성")
 if st.button("완성된 상세페이지 JPG 만들기", type="primary", use_container_width=True):
     config = current_config()
     core_images = {key: st.session_state.get(f"upload_{key}") for key, _, _ in IMAGE_SLOTS}
+    if DEFAULT_KOREA_IMAGE.exists():
+        core_images["korea"] = BytesIO(DEFAULT_KOREA_IMAGE.read_bytes())
+    else:
+        core_images["korea"] = None
     extra_model_images = st.session_state.get("extra_model_images") or []
     extra_detail_images = st.session_state.get("extra_detail_images") or []
     extra_gallery_images = st.session_state.get("extra_gallery_images") or []
