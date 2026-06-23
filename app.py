@@ -1080,14 +1080,14 @@ with tab4:
 
 with tab5:
     st.subheader("네이버 대표 이미지 1000×1000 생성")
-    st.caption("여러 장의 대표 사진을 한 번에 불러와 자동 또는 수동 스마트 크롭으로 1000×1000 대표 이미지를 만들 수 있습니다. 각 이미지는 개별 다운로드할 수 있고, 전체 ZIP도 받을 수 있습니다.")
+    st.caption("여러 장의 대표 사진을 한 번에 불러와 자동, 모델컷, 마네킹컷, 수동 모드로 1000×1000 대표 이미지를 만들 수 있습니다. 마네킹컷은 제품 전체를 보존하면서 테두리 여백을 정리해 확대하고, 부족한 정사각형 영역은 사진 가장자리를 자연스럽게 늘려 채웁니다.")
 
     rep_files = st.file_uploader(
         "대표 이미지용 사진 여러 장 업로드",
         type=["jpg", "jpeg", "png", "webp"],
         accept_multiple_files=True,
         key="rep_source_images",
-        help="모델컷, 제품컷 등 대표 이미지로 만들 원본 사진을 여러 장 선택해 주세요.",
+        help="모델컷, 마네킹컷, 제품컷 등 대표 이미지로 만들 원본 사진을 여러 장 선택해 주세요.",
     )
 
     canvas_cols = st.columns([1.2, 1, 1])
@@ -1097,11 +1097,12 @@ with tab5:
     with canvas_cols[1]:
         if st.button("업로드 이미지 전체 자동 세팅", use_container_width=True, key="rep_apply_auto_all"):
             for idx, uploaded in enumerate(rep_files or []):
-                auto = suggest_square_crop_params(uploaded_to_image(uploaded))
+                auto = suggest_square_crop_params(uploaded_to_image(uploaded), mode="자동")
                 st.session_state[f"rep_mode_{idx}"] = "자동"
                 st.session_state[f"rep_zoom_{idx}"] = float(auto.get("zoom", 1.0))
                 st.session_state[f"rep_x_{idx}"] = float(auto.get("offset_x", 0.0))
                 st.session_state[f"rep_y_{idx}"] = float(auto.get("offset_y", 0.0))
+                st.session_state[f"rep_trim_{idx}"] = float(auto.get("trim", 0.0))
             st.rerun()
     with canvas_cols[2]:
         st.caption("대표 이미지 JPG 품질")
@@ -1113,48 +1114,65 @@ with tab5:
         cols = st.columns(2)
         with ZipFile(zip_buffer, "w") as zipf:
             for idx, uploaded in enumerate(rep_files):
-                auto = suggest_square_crop_params(uploaded_to_image(uploaded))
-                st.session_state.setdefault(f"rep_mode_{idx}", "자동")
+                current_mode_key = f"rep_mode_{idx}"
+                st.session_state.setdefault(current_mode_key, "자동")
+                current_mode = st.session_state[current_mode_key]
+                auto = suggest_square_crop_params(uploaded_to_image(uploaded), mode=current_mode if current_mode != "수동" else "모델컷")
                 st.session_state.setdefault(f"rep_zoom_{idx}", float(auto.get("zoom", 1.0)))
                 st.session_state.setdefault(f"rep_x_{idx}", float(auto.get("offset_x", 0.0)))
                 st.session_state.setdefault(f"rep_y_{idx}", float(auto.get("offset_y", 0.0)))
+                st.session_state.setdefault(f"rep_trim_{idx}", float(auto.get("trim", 0.0)))
 
                 with cols[idx % 2]:
                     with st.container(border=True):
                         st.markdown(f"### 캔버스 {idx + 1}")
                         st.caption(uploaded.name)
                         current_mode = st.radio(
-                            "크롭 방식",
-                            ["자동", "수동"],
-                            key=f"rep_mode_{idx}",
+                            "생성 모드",
+                            ["자동", "모델컷", "마네킹컷", "수동"],
+                            key=current_mode_key,
                             horizontal=True,
                         )
 
                         action_cols = st.columns(2)
                         with action_cols[0]:
-                            if st.button("자동값 다시 적용", key=f"rep_auto_btn_{idx}", use_container_width=True):
+                            if st.button("추천값 다시 적용", key=f"rep_auto_btn_{idx}", use_container_width=True):
+                                auto = suggest_square_crop_params(uploaded_to_image(uploaded), mode=current_mode if current_mode != "수동" else "모델컷")
                                 st.session_state[f"rep_zoom_{idx}"] = float(auto.get("zoom", 1.0))
                                 st.session_state[f"rep_x_{idx}"] = float(auto.get("offset_x", 0.0))
                                 st.session_state[f"rep_y_{idx}"] = float(auto.get("offset_y", 0.0))
-                                st.session_state[f"rep_mode_{idx}"] = "자동"
+                                st.session_state[f"rep_trim_{idx}"] = float(auto.get("trim", 0.0))
                                 st.rerun()
                         with action_cols[1]:
-                            st.caption(f"추천 줌 {auto.get('zoom', 1.0)} / X {auto.get('offset_x', 0.0)} / Y {auto.get('offset_y', 0.0)}")
+                            st.caption(f"추천값 줌 {auto.get('zoom', 1.0)} / X {auto.get('offset_x', 0.0)} / Y {auto.get('offset_y', 0.0)} / 테두리정리 {auto.get('trim', 0.0)}%")
 
                         if current_mode == "수동":
                             st.slider("확대 비율", 1.0, 2.0, key=f"rep_zoom_{idx}", step=0.01)
                             st.slider("좌우 위치", -100.0, 100.0, key=f"rep_x_{idx}", step=1.0, help="왼쪽/오른쪽으로 보이는 위치를 조절합니다.")
                             st.slider("상하 위치", -100.0, 100.0, key=f"rep_y_{idx}", step=1.0, help="위/아래로 보이는 위치를 조절합니다.")
+                            st.slider("테두리 정리", 0.0, 20.0, key=f"rep_trim_{idx}", step=0.5, help="가장자리 배경 여백을 조금 잘라내고 제품을 더 꽉 차게 보이도록 정리합니다.")
                             zoom = float(st.session_state.get(f"rep_zoom_{idx}", auto.get("zoom", 1.0)))
                             offset_x = float(st.session_state.get(f"rep_x_{idx}", auto.get("offset_x", 0.0)))
                             offset_y = float(st.session_state.get(f"rep_y_{idx}", auto.get("offset_y", 0.0)))
+                            trim_percent = float(st.session_state.get(f"rep_trim_{idx}", auto.get("trim", 0.0)))
+                            render_mode = "모델컷"
                         else:
                             zoom = float(auto.get("zoom", 1.0))
                             offset_x = float(auto.get("offset_x", 0.0))
                             offset_y = float(auto.get("offset_y", 0.0))
+                            trim_percent = float(st.session_state.get(f"rep_trim_{idx}", auto.get("trim", 0.0))) if current_mode == "마네킹컷" else float(auto.get("trim", 0.0))
+                            if current_mode == "마네킹컷":
+                                st.slider("테두리 정리", 0.0, 20.0, key=f"rep_trim_{idx}", step=0.5, help="마네킹컷의 좌우/상하 여백을 정리해 더 크게 보이게 합니다.")
+                                trim_percent = float(st.session_state.get(f"rep_trim_{idx}", trim_percent))
+                                st.info("마네킹컷 모드는 옷 전체를 최대한 보존하면서 정사각형 부족 영역을 가장자리 확장으로 채웁니다.")
+                            elif current_mode == "모델컷":
+                                st.info("모델컷 모드는 상품이 더 크게 보이도록 스마트 크롭을 적용합니다.")
+                            else:
+                                st.info("자동 모드는 사진 비율을 보고 모델컷 또는 마네킹컷에 가까운 방식으로 처리합니다.")
                             st.session_state[f"rep_zoom_{idx}"] = zoom
                             st.session_state[f"rep_x_{idx}"] = offset_x
                             st.session_state[f"rep_y_{idx}"] = offset_y
+                            render_mode = current_mode
 
                         out_bytes = square_image_bytes(
                             uploaded,
@@ -1163,6 +1181,8 @@ with tab5:
                             offset_x=offset_x,
                             offset_y=offset_y,
                             quality=95,
+                            mode=render_mode,
+                            trim_percent=trim_percent,
                         )
                         if out_bytes:
                             st.image(out_bytes, caption="1000×1000 미리보기", use_container_width=True)
@@ -1193,8 +1213,7 @@ with tab5:
             )
             st.caption(f"총 {len(zip_names)}장의 대표 이미지를 ZIP으로 받을 수 있습니다.")
     else:
-        st.info("대표 이미지용 원본 사진을 여러 장 업로드하면 여기에서 자동/수동 스마트 크롭 캔버스가 생성됩니다.")
-
+        st.info("대표 이미지용 원본 사진을 여러 장 업로드하면 여기에서 자동, 모델컷, 마네킹컷, 수동 캔버스가 생성됩니다.")
 
 st.divider()
 st.subheader("상세페이지 JPG 생성")
