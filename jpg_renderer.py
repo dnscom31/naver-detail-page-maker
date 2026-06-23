@@ -256,33 +256,61 @@ def _trim_edges(image: Image.Image, trim_percent: float) -> Image.Image:
 
 
 def _edge_extend_canvas(image: Image.Image, canvas_size: int, bg_color: Tuple[int, int, int] = (255,255,255)) -> Image.Image:
+    """원본 비율을 유지해 정사각형에 배치하고, 남는 영역은 사진 가장자리 픽셀을 늘려 채웁니다.
+
+    Pillow는 resize 크기 중 하나가 0이면 ValueError가 발생합니다.
+    그래서 상/하/좌/우 여백이 0인 경우에는 해당 확장 처리를 건너뜁니다.
+    """
     src = image.convert("RGB")
     ratio = min(canvas_size / src.width, canvas_size / src.height)
     new_w = max(1, int(src.width * ratio))
     new_h = max(1, int(src.height * ratio))
     fitted = src.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
     canvas = Image.new("RGB", (canvas_size, canvas_size), bg_color)
     x = (canvas_size - new_w) // 2
     y = (canvas_size - new_h) // 2
+
     canvas.paste(fitted, (x, y))
 
+    # 좌우 여백 확장
     if new_w < canvas_size:
-        left_strip = fitted.crop((0, 0, 1, new_h)).resize((x, new_h), Image.Resampling.BILINEAR)
-        right_margin = canvas_size - (x + new_w)
-        right_strip = fitted.crop((new_w - 1, 0, new_w, new_h)).resize((right_margin, new_h), Image.Resampling.BILINEAR)
-        if x > 0:
+        left_margin = max(0, x)
+        right_margin = max(0, canvas_size - (x + new_w))
+
+        if left_margin > 0:
+            left_strip = fitted.crop((0, 0, 1, new_h)).resize(
+                (left_margin, new_h),
+                Image.Resampling.BILINEAR,
+            )
             canvas.paste(left_strip, (0, y))
+
         if right_margin > 0:
+            right_strip = fitted.crop((new_w - 1, 0, new_w, new_h)).resize(
+                (right_margin, new_h),
+                Image.Resampling.BILINEAR,
+            )
             canvas.paste(right_strip, (x + new_w, y))
 
+    # 상하 여백 확장
     if new_h < canvas_size:
-        top_strip = canvas.crop((0, y, canvas_size, y + 1)).resize((canvas_size, y), Image.Resampling.BILINEAR)
-        bottom_margin = canvas_size - (y + new_h)
-        bottom_strip = canvas.crop((0, y + new_h - 1, canvas_size, y + new_h)).resize((canvas_size, bottom_margin), Image.Resampling.BILINEAR)
-        if y > 0:
+        top_margin = max(0, y)
+        bottom_margin = max(0, canvas_size - (y + new_h))
+
+        if top_margin > 0:
+            top_strip = canvas.crop((0, y, canvas_size, y + 1)).resize(
+                (canvas_size, top_margin),
+                Image.Resampling.BILINEAR,
+            )
             canvas.paste(top_strip, (0, 0))
+
         if bottom_margin > 0:
+            bottom_strip = canvas.crop((0, y + new_h - 1, canvas_size, y + new_h)).resize(
+                (canvas_size, bottom_margin),
+                Image.Resampling.BILINEAR,
+            )
             canvas.paste(bottom_strip, (0, y + new_h))
+
     return canvas
 
 
