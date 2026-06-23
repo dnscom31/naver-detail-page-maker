@@ -4,10 +4,14 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 MAX_JPEG_HEIGHT = 60000
 MAX_EXTRA_IMAGES = 30
+STANDARD_CARD_MARGIN = 34
+STANDARD_CARD_PADDING = 18
+STANDARD_CARD_RADIUS = 16
 
 
 FONT_CANDIDATES = {
@@ -138,6 +142,260 @@ def uploaded_to_image(uploaded) -> Image.Image | None:
         return image.convert("RGB")
     except Exception:
         return None
+
+
+
+
+def _sample_background_color(image: Image.Image) -> Tuple[int, int, int]:
+    rgb = image.convert("RGB")
+    w, h = rgb.size
+    sample_points = [
+        (0, 0),
+        (w - 1, 0),
+        (0, h - 1),
+        (w - 1, h - 1),
+        (w // 2, 0),
+        (w // 2, h - 1),
+        (0, h // 2),
+        (w - 1, h // 2),
+    ]
+    colors = [rgb.getpixel((max(0, min(w - 1, x)), max(0, min(h - 1, y)))) for x, y in sample_points]
+    return tuple(int(sum(channel) / len(colors)) for channel in zip(*colors))
+
+
+def suggest_square_crop_params(image: Image.Image | None) -> Dict[str, float]:
+    if image is None:
+        return {"zoom": 1.0, "offset_x": 0.0, "offset_y": 0.0}
+    rgb = image.convert("RGB")
+    src_w, src_h = rgb.size
+    if src_w == 0 or src_h == 0:
+        return {"zoom": 1.0, "offset_x": 0.0, "offset_y": 0.0}
+
+    bg = _sample_background_color(rgb)
+    preview = rgb.copy()
+    preview.thumbnail((420, 420), Image.Resampling.LANCZOS)
+    px = preview.load()
+    pw, ph = preview.size
+    xs, ys = [], []
+    threshold = 28
+    for y in range(ph):
+        for x in range(pw):
+            r, g, b = px[x, y]
+            diff = abs(r - bg[0]) + abs(g - bg[1]) + abs(b - bg[2])
+            if diff > threshold * 3:
+                xs.append(x)
+                ys.append(y)
+    side_base = min(src_w, src_h)
+    if xs and ys:
+        left_p, right_p = min(xs), max(xs)
+        top_p, bottom_p = min(ys), max(ys)
+        scale_x = src_w / pw
+        scale_y = src_h / ph
+        bbox = (left_p * scale_x, top_p * scale_y, right_p * scale_x, bottom_p * scale_y)
+        bbox_w = max(1.0, bbox[2] - bbox[0])
+        bbox_h = max(1.0, bbox[3] - bbox[1])
+        desired_side = max(bbox_w, bbox_h) * 1.15
+        desired_side = max(side_base * 0.72, min(side_base, desired_side))
+        zoom = side_base / desired_side
+        zoom = max(1.0, min(1.45, zoom))
+        center_x = (bbox[0] + bbox[2]) / 2
+        center_y = (bbox[1] + bbox[3]) / 2 - desired_side * 0.04
+    else:
+        zoom = 1.0
+        center_x = src_w / 2
+        center_y = src_h / 2
+
+    crop_side = side_base / zoom
+    max_shift_x = max(0.0, (src_w - crop_side) / 2)
+    max_shift_y = max(0.0, (src_h - crop_side) / 2)
+    offset_x = 0.0 if max_shift_x == 0 else ((center_x - src_w / 2) / max_shift_x) * 100
+    offset_y = 0.0 if max_shift_y == 0 else ((center_y - src_h / 2) / max_shift_y) * 100
+    offset_x = max(-100.0, min(100.0, offset_x))
+    offset_y = max(-100.0, min(100.0, offset_y))
+    return {"zoom": round(float(zoom), 2), "offset_x": round(float(offset_x), 1), "offset_y": round(float(offset_y), 1)}
+
+
+def render_square_image(
+    image: Image.Image,
+    canvas_size: int = 1000,
+    zoom: float = 1.0,
+    offset_x: float = 0.0,
+    offset_y: float = 0.0,
+    bg_color: Tuple[int, int, int] = (255, 255, 255),
+) -> Image.Image:
+    src = image.convert("RGB")
+    src_w, src_h = src.size
+    side_base = float(min(src_w, src_h))
+    zoom = max(1.0, min(2.0, float(zoom)))
+    crop_side = max(1.0, side_base / zoom)
+    base_x = src_w / 2
+    base_y = src_h / 2
+    auto = suggest_square_crop_params(src)
+    if auto:
+        max_shift_x = max(0.0, (src_w - crop_side) / 2)
+        max_shift_y = max(0.0, (src_h - crop_side) / 2)
+        auto_side = side_base / max(1.0, float(auto.get("zoom", 1.0)))
+        auto_shift_x = max(0.0, (src_w - auto_side) / 2)
+        auto_shift_y = max(0.0, (src_h - auto_side) / 2)
+        auto_center_x = src_w / 2 + auto_shift_x * float(auto.get("offset_x", 0.0)) / 100.0
+        auto_center_y = src_h / 2 + auto_shift_y * float(auto.get("offset_y", 0.0)) / 100.0
+        base_x = auto_center_x
+        base_y = auto_center_y
+    max_shift_x = max(0.0, (src_w - crop_side) / 2)
+    max_shift_y = max(0.0, (src_h - crop_side) / 2)
+    center_x = base_x + max_shift_x * (float(offset_x) / 100.0)
+    center_y = base_y + max_shift_y * (float(offset_y) / 100.0)
+    half = crop_side / 2
+    left = center_x - half
+    top = center_y - half
+    left = min(max(0.0, left), max(0.0, src_w - crop_side))
+    top = min(max(0.0, top), max(0.0, src_h - crop_side))
+    crop = src.crop((int(round(left)), int(round(top)), int(round(left + crop_side)), int(round(top + crop_side))))
+    crop = crop.resize((canvas_size, canvas_size), Image.Resampling.LANCZOS)
+    canvas = Image.new("RGB", (canvas_size, canvas_size), bg_color)
+    canvas.paste(crop, (0, 0))
+    return canvas
+
+
+def square_image_bytes(
+    uploaded,
+    canvas_size: int = 1000,
+    zoom: float = 1.0,
+    offset_x: float = 0.0,
+    offset_y: float = 0.0,
+    quality: int = 95,
+) -> bytes | None:
+    image = uploaded_to_image(uploaded)
+    if image is None:
+        return None
+    result = render_square_image(image, canvas_size=canvas_size, zoom=zoom, offset_x=offset_x, offset_y=offset_y)
+    buffer = BytesIO()
+    result.save(buffer, format="JPEG", quality=int(quality), optimize=True, progressive=True, subsampling=1)
+    return buffer.getvalue()
+
+
+def make_auto_extended_background(
+    image: Image.Image,
+    box_width: int,
+    box_height: int,
+) -> Image.Image:
+    src = image.convert("RGB")
+    cover_ratio = max(box_width / src.width, box_height / src.height)
+    cover_w = max(1, int(src.width * cover_ratio))
+    cover_h = max(1, int(src.height * cover_ratio))
+    cover = src.resize((cover_w, cover_h), Image.Resampling.LANCZOS)
+    left = max(0, (cover_w - box_width) // 2)
+    top = max(0, (cover_h - box_height) // 2)
+    bg = cover.crop((left, top, left + box_width, top + box_height))
+    bg = bg.filter(ImageFilter.GaussianBlur(radius=22))
+    overlay = Image.new("RGB", (box_width, box_height), (255, 255, 255))
+    bg = Image.blend(bg, overlay, 0.18)
+    return bg
+
+
+def fit_into_box(image: Image.Image, box_width: int, box_height: int) -> Image.Image:
+    ratio = min(box_width / image.width, box_height / image.height)
+    new_w = max(1, int(image.width * ratio))
+    new_h = max(1, int(image.height * ratio))
+    return image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+
+def make_uniform_image_block(
+    uploaded,
+    width: int,
+    bg: str,
+    box_height: int = 980,
+    card_bg: str = "#ffffff",
+) -> Image.Image | None:
+    image = uploaded_to_image(uploaded)
+    if image is None:
+        return None
+    outer = STANDARD_CARD_MARGIN
+    inner_pad = STANDARD_CARD_PADDING
+    card_w = width - outer * 2
+    card_h = box_height
+    block = solid_block(width, card_h + outer * 2, bg)
+    d = ImageDraw.Draw(block)
+    d.rounded_rectangle((outer, outer, outer + card_w, outer + card_h), radius=STANDARD_CARD_RADIUS, fill=_hex(card_bg), outline=(230, 230, 230), width=1)
+    inner_w = card_w - inner_pad * 2
+    inner_h = card_h - inner_pad * 2
+    auto_bg = make_auto_extended_background(image, inner_w, inner_h)
+    bg_x = outer + inner_pad
+    bg_y = outer + inner_pad
+    block.paste(auto_bg, (bg_x, bg_y))
+    fitted = fit_into_box(image, inner_w, inner_h)
+    x = bg_x + (inner_w - fitted.width) // 2
+    y = bg_y + (inner_h - fitted.height) // 2
+    block.paste(fitted, (x, y))
+    return block
+
+
+def make_uniform_two_image_block(
+    left_file,
+    right_file,
+    width: int,
+    bg: str,
+    box_height: int = 760,
+    gap: int = 16,
+    card_bg: str = "#ffffff",
+) -> Image.Image | None:
+    files = [f for f in [left_file, right_file] if f is not None]
+    if not files:
+        return None
+    if len(files) == 1:
+        return make_uniform_image_block(files[0], width, bg, box_height=box_height, card_bg=card_bg)
+    outer = STANDARD_CARD_MARGIN
+    inner_pad = STANDARD_CARD_PADDING
+    card_w = width - outer * 2
+    cell_w = (card_w - inner_pad * 3) // 2
+    cell_h = box_height - inner_pad * 2
+    block = solid_block(width, box_height + outer * 2, bg)
+    d = ImageDraw.Draw(block)
+    d.rounded_rectangle((outer, outer, outer + card_w, outer + box_height), radius=STANDARD_CARD_RADIUS, fill=_hex(card_bg), outline=(230, 230, 230), width=1)
+    x = outer + inner_pad
+    top_y = outer + inner_pad
+    for uploaded in files:
+        img = uploaded_to_image(uploaded)
+        if img is None:
+            x += cell_w + inner_pad
+            continue
+        cell_bg = make_auto_extended_background(img, cell_w, cell_h)
+        block.paste(cell_bg, (x, top_y))
+        fitted = fit_into_box(img, cell_w, cell_h)
+        y = top_y + (cell_h - fitted.height) // 2
+        block.paste(fitted, (x + (cell_w - fitted.width) // 2, y))
+        x += cell_w + inner_pad
+    return block
+
+
+def make_uniform_gallery(
+    files: Sequence,
+    width: int,
+    bg: str,
+    columns: int = 1,
+    gap: int = 16,
+    box_height: int = 820,
+    card_bg: str = "#ffffff",
+) -> Image.Image | None:
+    valid = [f for f in files if f is not None]
+    if not valid:
+        return None
+    blocks: List[Image.Image] = []
+    if columns <= 1:
+        for uploaded in valid:
+            block = make_uniform_image_block(uploaded, width, bg, box_height=box_height, card_bg=card_bg)
+            if block is not None:
+                blocks.append(block)
+    else:
+        for i in range(0, len(valid), columns):
+            row_files = valid[i : i + columns]
+            if len(row_files) == 1:
+                block = make_uniform_image_block(row_files[0], width, bg, box_height=box_height, card_bg=card_bg)
+            else:
+                block = make_uniform_two_image_block(row_files[0], row_files[1], width, bg, box_height=box_height, gap=gap, card_bg=card_bg)
+            if block is not None:
+                blocks.append(block)
+    return stitch(blocks, width, bg, gap=gap) if blocks else None
 
 
 def fit_image(
@@ -307,15 +565,7 @@ def make_list_section(
 
 
 def make_full_image_block(uploaded, width: int, bg: str, max_height: int = 1150) -> Image.Image | None:
-    image = uploaded_to_image(uploaded)
-    if image is None:
-        return None
-    fitted = fit_image(image, width, max_height)
-    if fitted.width == width:
-        return fitted
-    block = solid_block(width, fitted.height, bg)
-    block.paste(fitted, ((width - fitted.width) // 2, 0))
-    return block
+    return make_uniform_image_block(uploaded, width, bg, box_height=max_height)
 
 
 def make_two_image_block(
@@ -326,28 +576,7 @@ def make_two_image_block(
     gap: int = 16,
     max_height: int = 900,
 ) -> Image.Image | None:
-    files = [f for f in [left_file, right_file] if f is not None]
-    if not files:
-        return None
-    if len(files) == 1:
-        return make_full_image_block(files[0], width, bg, max_height)
-    cell_w = (width - gap) // 2
-    images = []
-    for uploaded in files:
-        img = uploaded_to_image(uploaded)
-        if img is None:
-            continue
-        images.append(fit_image(img, cell_w, max_height))
-    if not images:
-        return None
-    common_h = max(img.height for img in images)
-    block = solid_block(width, common_h, bg)
-    x = 0
-    for image in images:
-        y = (common_h - image.height) // 2
-        block.paste(image, (x, y))
-        x += cell_w + gap
-    return block
+    return make_uniform_two_image_block(left_file, right_file, width, bg, box_height=max_height, gap=gap)
 
 
 def make_gallery(
@@ -358,25 +587,7 @@ def make_gallery(
     gap: int = 16,
     max_height: int = 950,
 ) -> Image.Image | None:
-    valid = [f for f in files if f is not None]
-    if not valid:
-        return None
-    blocks: List[Image.Image] = []
-    if columns <= 1:
-        for uploaded in valid:
-            block = make_full_image_block(uploaded, width, bg, max_height)
-            if block is not None:
-                blocks.append(block)
-    else:
-        for i in range(0, len(valid), columns):
-            row_files = valid[i : i + columns]
-            if len(row_files) == 1:
-                block = make_full_image_block(row_files[0], width, bg, max_height)
-            else:
-                block = make_two_image_block(row_files[0], row_files[1], width, bg, gap, max_height)
-            if block is not None:
-                blocks.append(block)
-    return stitch(blocks, width, bg, gap=gap) if blocks else None
+    return make_uniform_gallery(files, width, bg, columns=columns, gap=gap, box_height=max_height)
 
 
 def make_points_section(width: int, theme: Dict[str, str], config: Dict) -> Image.Image:

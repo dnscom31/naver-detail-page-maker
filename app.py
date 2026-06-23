@@ -3,12 +3,19 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from io import BytesIO
+from zipfile import ZipFile
 from pathlib import Path
 from typing import Dict, List
 
 import streamlit as st
 
-from jpg_renderer import MAX_EXTRA_IMAGES, build_detail_jpg
+from jpg_renderer import (
+    MAX_EXTRA_IMAGES,
+    build_detail_jpg,
+    square_image_bytes,
+    suggest_square_crop_params,
+    uploaded_to_image,
+)
 
 
 st.set_page_config(
@@ -716,7 +723,7 @@ def show_uploaded_preview(files: List, columns: int = 4) -> None:
 initialize_state()
 
 st.title("네이버 상세페이지 JPG 자동 제작기")
-st.caption("테마·문구·사진을 설정한 뒤 생성 버튼을 누르면 네이버 업로드용 긴 JPG가 바로 만들어집니다.")
+st.caption("테마·문구·사진을 설정한 뒤 상세페이지 JPG를 만들거나, 대표 이미지 생성 탭에서 1000×1000 대표 이미지를 여러 장 한 번에 만들 수 있습니다.")
 
 st.subheader("상세페이지 모드 빠른 선택")
 st.caption("버튼 한 번으로 섹션 구성 방향을 바꿀 수 있습니다. 선택 후에도 모든 문구는 자유롭게 수정할 수 있습니다.")
@@ -878,7 +885,7 @@ with st.sidebar:
     )
 
 
-tab1, tab2, tab3, tab4 = st.tabs(["기본 문구", "세일 포인트", "상품 정보", "사진 업로드"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["기본 문구", "세일 포인트", "상품 정보", "사진 업로드", "대표 이미지 생성"])
 
 with tab1:
     st.subheader("첫 화면")
@@ -1069,6 +1076,125 @@ with tab4:
         help="코디컷, 색상컷, 무드컷, 추가 설명 이미지 등을 여러 장 선택하세요.",
     )
     show_uploaded_preview(extra_gallery)
+
+
+with tab5:
+    st.subheader("네이버 대표 이미지 1000×1000 생성")
+    st.caption("여러 장의 대표 사진을 한 번에 불러와 자동 또는 수동 스마트 크롭으로 1000×1000 대표 이미지를 만들 수 있습니다. 각 이미지는 개별 다운로드할 수 있고, 전체 ZIP도 받을 수 있습니다.")
+
+    rep_files = st.file_uploader(
+        "대표 이미지용 사진 여러 장 업로드",
+        type=["jpg", "jpeg", "png", "webp"],
+        accept_multiple_files=True,
+        key="rep_source_images",
+        help="모델컷, 제품컷 등 대표 이미지로 만들 원본 사진을 여러 장 선택해 주세요.",
+    )
+
+    canvas_cols = st.columns([1.2, 1, 1])
+    with canvas_cols[0]:
+        st.markdown("**출력 규격**")
+        st.info("기본 출력은 네이버 권장 규격인 1000×1000 JPG입니다.")
+    with canvas_cols[1]:
+        if st.button("업로드 이미지 전체 자동 세팅", use_container_width=True, key="rep_apply_auto_all"):
+            for idx, uploaded in enumerate(rep_files or []):
+                auto = suggest_square_crop_params(uploaded_to_image(uploaded))
+                st.session_state[f"rep_mode_{idx}"] = "자동"
+                st.session_state[f"rep_zoom_{idx}"] = float(auto.get("zoom", 1.0))
+                st.session_state[f"rep_x_{idx}"] = float(auto.get("offset_x", 0.0))
+                st.session_state[f"rep_y_{idx}"] = float(auto.get("offset_y", 0.0))
+            st.rerun()
+    with canvas_cols[2]:
+        st.caption("대표 이미지 JPG 품질")
+        st.info("기본값 95")
+
+    if rep_files:
+        zip_buffer = BytesIO()
+        zip_names = []
+        cols = st.columns(2)
+        with ZipFile(zip_buffer, "w") as zipf:
+            for idx, uploaded in enumerate(rep_files):
+                auto = suggest_square_crop_params(uploaded_to_image(uploaded))
+                st.session_state.setdefault(f"rep_mode_{idx}", "자동")
+                st.session_state.setdefault(f"rep_zoom_{idx}", float(auto.get("zoom", 1.0)))
+                st.session_state.setdefault(f"rep_x_{idx}", float(auto.get("offset_x", 0.0)))
+                st.session_state.setdefault(f"rep_y_{idx}", float(auto.get("offset_y", 0.0)))
+
+                with cols[idx % 2]:
+                    with st.container(border=True):
+                        st.markdown(f"### 캔버스 {idx + 1}")
+                        st.caption(uploaded.name)
+                        current_mode = st.radio(
+                            "크롭 방식",
+                            ["자동", "수동"],
+                            key=f"rep_mode_{idx}",
+                            horizontal=True,
+                        )
+
+                        action_cols = st.columns(2)
+                        with action_cols[0]:
+                            if st.button("자동값 다시 적용", key=f"rep_auto_btn_{idx}", use_container_width=True):
+                                st.session_state[f"rep_zoom_{idx}"] = float(auto.get("zoom", 1.0))
+                                st.session_state[f"rep_x_{idx}"] = float(auto.get("offset_x", 0.0))
+                                st.session_state[f"rep_y_{idx}"] = float(auto.get("offset_y", 0.0))
+                                st.session_state[f"rep_mode_{idx}"] = "자동"
+                                st.rerun()
+                        with action_cols[1]:
+                            st.caption(f"추천 줌 {auto.get('zoom', 1.0)} / X {auto.get('offset_x', 0.0)} / Y {auto.get('offset_y', 0.0)}")
+
+                        if current_mode == "수동":
+                            st.slider("확대 비율", 1.0, 2.0, key=f"rep_zoom_{idx}", step=0.01)
+                            st.slider("좌우 위치", -100.0, 100.0, key=f"rep_x_{idx}", step=1.0, help="왼쪽/오른쪽으로 보이는 위치를 조절합니다.")
+                            st.slider("상하 위치", -100.0, 100.0, key=f"rep_y_{idx}", step=1.0, help="위/아래로 보이는 위치를 조절합니다.")
+                            zoom = float(st.session_state.get(f"rep_zoom_{idx}", auto.get("zoom", 1.0)))
+                            offset_x = float(st.session_state.get(f"rep_x_{idx}", auto.get("offset_x", 0.0)))
+                            offset_y = float(st.session_state.get(f"rep_y_{idx}", auto.get("offset_y", 0.0)))
+                        else:
+                            zoom = float(auto.get("zoom", 1.0))
+                            offset_x = float(auto.get("offset_x", 0.0))
+                            offset_y = float(auto.get("offset_y", 0.0))
+                            st.session_state[f"rep_zoom_{idx}"] = zoom
+                            st.session_state[f"rep_x_{idx}"] = offset_x
+                            st.session_state[f"rep_y_{idx}"] = offset_y
+
+                        out_bytes = square_image_bytes(
+                            uploaded,
+                            canvas_size=1000,
+                            zoom=zoom,
+                            offset_x=offset_x,
+                            offset_y=offset_y,
+                            quality=95,
+                        )
+                        if out_bytes:
+                            st.image(out_bytes, caption="1000×1000 미리보기", use_container_width=True)
+                            safe_name = Path(uploaded.name).stem or f"대표이미지_{idx+1}"
+                            out_name = f"{safe_name}_1000x1000.jpg"
+                            st.download_button(
+                                "이 이미지 다운로드",
+                                data=out_bytes,
+                                file_name=out_name,
+                                mime="image/jpeg",
+                                use_container_width=True,
+                                key=f"rep_download_{idx}",
+                            )
+                            zipf.writestr(out_name, out_bytes)
+                            zip_names.append(out_name)
+                        else:
+                            st.warning("이미지를 처리하지 못했습니다.")
+
+        if zip_names:
+            st.download_button(
+                "대표 이미지 전체 ZIP 다운로드",
+                data=zip_buffer.getvalue(),
+                file_name="naver_representative_images_1000x1000.zip",
+                mime="application/zip",
+                type="primary",
+                use_container_width=True,
+                key="rep_zip_download",
+            )
+            st.caption(f"총 {len(zip_names)}장의 대표 이미지를 ZIP으로 받을 수 있습니다.")
+    else:
+        st.info("대표 이미지용 원본 사진을 여러 장 업로드하면 여기에서 자동/수동 스마트 크롭 캔버스가 생성됩니다.")
+
 
 st.divider()
 st.subheader("상세페이지 JPG 생성")
