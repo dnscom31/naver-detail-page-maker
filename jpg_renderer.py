@@ -8,7 +8,7 @@ import math
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-MAX_JPEG_HEIGHT = 60000
+MAX_JPEG_HEIGHT = 80000
 MAX_EXTRA_IMAGES = 30
 STANDARD_CARD_MARGIN = 34
 STANDARD_CARD_PADDING = 18
@@ -383,7 +383,7 @@ def square_image_bytes(
         trim_percent=trim_percent,
     )
     buffer = BytesIO()
-    result.save(buffer, format="JPEG", quality=int(quality), optimize=True, progressive=True, subsampling=1)
+    result.save(buffer, format="JPEG", quality=int(quality), optimize=True, progressive=True, subsampling=0)
     return buffer.getvalue()
 
 
@@ -406,7 +406,7 @@ def make_uniform_image_block(
         return None
 
     margin_x = 28
-    pad_y = 18
+    pad_y = 12
     block = solid_block(width, box_height + pad_y * 2, bg)
     inner_w = width - margin_x * 2
     inner_h = box_height
@@ -424,7 +424,7 @@ def make_uniform_two_image_block(
     width: int,
     bg: str,
     box_height: int = 760,
-    gap: int = 16,
+    gap: int = 14,
 ) -> Image.Image | None:
     files = [f for f in [left_file, right_file] if f is not None]
     if not files:
@@ -433,7 +433,7 @@ def make_uniform_two_image_block(
         return make_uniform_image_block(files[0], width, bg, box_height=box_height)
 
     margin_x = 28
-    pad_y = 18
+    pad_y = 12
     inner_w = width - margin_x * 2
     cell_w = (inner_w - gap) // 2
     cell_h = box_height
@@ -457,7 +457,7 @@ def make_uniform_gallery(
     width: int,
     bg: str,
     columns: int = 1,
-    gap: int = 16,
+    gap: int = 14,
     box_height: int = 820,
 ) -> Image.Image | None:
     valid = [f for f in files if f is not None]
@@ -480,7 +480,7 @@ def make_uniform_gallery(
             if block is not None:
                 blocks.append(block)
 
-    return stitch(blocks, width, bg, gap=gap) if blocks else None
+    return stitch(blocks, width, bg, gap=14) if blocks else None
 
 
 
@@ -659,7 +659,7 @@ def make_two_image_block(
     right_file,
     width: int,
     bg: str,
-    gap: int = 16,
+    gap: int = 14,
     max_height: int = 900,
 ) -> Image.Image | None:
     return make_uniform_two_image_block(left_file, right_file, width, bg, box_height=max_height, gap=gap)
@@ -670,7 +670,7 @@ def make_gallery(
     width: int,
     bg: str,
     columns: int = 1,
-    gap: int = 16,
+    gap: int = 14,
     max_height: int = 950,
 ) -> Image.Image | None:
     return make_uniform_gallery(files, width, bg, columns=columns, gap=gap, box_height=max_height)
@@ -1113,7 +1113,7 @@ def build_detail_jpg(
     quality: int = 90,
 ) -> Tuple[bytes, int, int, int]:
     width = int(config["page_width"])
-    width = max(720, min(1000, width))
+    width = max(720, min(1280, width))
     extras = list(extra_model_images) + list(extra_detail_images) + list(extra_gallery_images)
     if len(extras) > MAX_EXTRA_IMAGES:
         remaining = MAX_EXTRA_IMAGES
@@ -1166,13 +1166,13 @@ def build_detail_jpg(
             "우아하게 정돈되는 실루엣",
             config["look_description"],
             align=theme.get("heading_align", "center"),
-            padding_bottom=32,
+            padding_bottom=44,
             base_size=config["base_font_size"],
         )
     )
     silhouette_blocks.append(make_full_image_block(core_images.get("front"), width, theme["section_bg"], 1250))
     silhouette_blocks.append(make_two_image_block(core_images.get("angle"), core_images.get("back"), width, theme["section_bg"], max_height=900))
-    silhouette_blocks.append(make_gallery(extra_model_images, width, theme["section_bg"], columns=2, max_height=900))
+    silhouette_blocks.append(make_gallery(extra_model_images, width, theme["section_bg"], columns=1, gap=14, max_height=1100))
 
     detail_blocks: List[Image.Image | None] = []
     detail_blocks.append(make_points_section(width, theme, config))
@@ -1188,7 +1188,7 @@ def build_detail_jpg(
             "DETAIL",
             "눈으로 확인하는 섬세한 디테일",
             align=theme.get("heading_align", "center"),
-            padding_bottom=32,
+            padding_bottom=44,
             base_size=config["base_font_size"],
         )
     )
@@ -1263,6 +1263,6 @@ def build_detail_jpg(
         final = final.resize((new_width, MAX_JPEG_HEIGHT), Image.Resampling.LANCZOS)
 
     buffer = BytesIO()
-    final.save(buffer, format="JPEG", quality=int(quality), optimize=True, progressive=True, subsampling=1)
+    final.save(buffer, format="JPEG", quality=int(quality), optimize=True, progressive=True, subsampling=0)
     data = buffer.getvalue()
     return data, final.width, final.height, min(len(extras), MAX_EXTRA_IMAGES)

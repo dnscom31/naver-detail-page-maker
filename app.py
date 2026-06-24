@@ -202,10 +202,10 @@ DEFAULTS = {
     "theme": "클래식 아이보리",
     "body_font": "고딕 계열",
     "heading_font": "명조 계열",
-    "page_width": 860,
+    "page_width": 1000,
     "base_font_size": 17,
     "section_spacing": 72,
-    "jpg_quality": 95,
+    "jpg_quality": 97,
     "detail_page_mode": "혼합형 상세페이지",
     "product_type_preset": "블라우스형",
     "copy_style_preset": "균형형",
@@ -830,11 +830,11 @@ with st.sidebar:
     st.caption("브랜드 스토리를 강조하려면 클래식 아이보리, 세이지 그린, 테라코타 브라운이 잘 어울립니다.")
     st.selectbox("본문 폰트", FONTS, key="body_font")
     st.selectbox("제목 폰트", FONTS, key="heading_font")
-    st.slider("완성 JPG 가로폭", 720, 1000, key="page_width", step=10)
+    st.slider("완성 JPG 가로폭", 720, 1280, key="page_width", step=10)
     st.slider("기본 글자 크기", 14, 22, key="base_font_size")
     st.slider("구역 간격", 45, 100, key="section_spacing", step=5)
-    st.slider("JPG 품질", 80, 95, key="jpg_quality")
-    st.caption("기본값은 최대 품질 95로 설정되어 있습니다.")
+    st.slider("JPG 품질", 85, 98, key="jpg_quality")
+    st.caption("기본값은 고해상도 1000px, 고품질 97로 설정되어 있습니다. 필요하면 1280px까지 올릴 수 있습니다.")
 
     st.divider()
     st.header("기본값 저장·불러오기")
@@ -1180,7 +1180,7 @@ with tab5:
                             zoom=zoom,
                             offset_x=offset_x,
                             offset_y=offset_y,
-                            quality=95,
+                            quality=98,
                             mode=render_mode,
                             trim_percent=trim_percent,
                         )
