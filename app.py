@@ -185,22 +185,18 @@ FONTS = ["맑은 고딕", "고딕 계열", "명조 계열", "바탕"]
 DEFAULT_KOREA_IMAGE = Path(__file__).resolve().parent / "assets" / "domestic_production.jpg"
 SAVED_DEFAULTS_FILE = Path(__file__).resolve().parent / "saved_defaults.json"
 
-CORE_IMAGE_KEYS = [
-    "hero",
-    "front",
-    "angle",
-    "back",
-    "fabric",
-    "button",
-    "collar",
-    "sleeve",
-    "styling",
-    "size",
+IMAGE_SLOTS = [
+    ("hero", "01. 대표 모델 착용컷", "첫 화면을 대표하는 핵심 이미지"),
+    ("front", "02. 정면 착용컷", "상품 전체 실루엣이 가장 잘 보이는 정면 사진"),
+    ("angle", "03. 사선 착용컷", "자연스러운 각도와 분위기를 보여주는 사진"),
+    ("back", "04. 후면 착용컷", "뒷모습과 전체 균형을 확인할 수 있는 사진"),
+    ("fabric", "05. 원단·소재 접사", "조직감, 표면감, 결감이 보이는 사진"),
+    ("button", "06. 대표 디테일 접사", "단추, 지퍼, 장식, 주머니 등 핵심 디테일 사진"),
+    ("collar", "07. 상단 디테일", "카라, 넥라인, 어깨선 등 상단 디테일 사진"),
+    ("sleeve", "08. 소매·밑단 디테일", "소매, 커프스, 밑단, 절개선 등의 디테일 사진"),
+    ("styling", "10. 추가 착용·코디컷", "다양한 분위기와 연출을 보여주는 사진"),
+    ("size", "11. 사이즈 측정 이미지", "측정 위치와 기준을 안내하는 사진"),
 ]
-
-MODEL_CORE_KEYS = ["hero", "front", "angle", "back"]
-DETAIL_CORE_KEYS = ["fabric", "button", "collar", "sleeve"]
-GALLERY_CORE_KEYS = ["styling"]
 
 DEFAULTS = {
     "theme": "클래식 아이보리",
@@ -1020,63 +1016,26 @@ with tab3:
     st.text_area("한 줄에 한 항목씩 입력", key="notices", height=220)
 
 with tab4:
-    st.subheader("사진 업로드")
-    st.caption(
-        "기본 배치 사진을 세부 슬롯으로 나누지 않고, 사진 성격별로 여러 장씩 업로드합니다. "
-        "업로드한 순서대로 상세페이지에 배치됩니다."
-    )
-
-    st.markdown("### 01. 모델컷 · 마네킹컷 · 상품 전체컷")
-    st.caption(
-        "대표 모델컷, 정면컷, 사선컷, 후면컷을 따로 나누지 않고 한 번에 여러 장 업로드합니다. "
-        "1번째 사진은 상단 대표 이미지, 2~4번째 사진은 실루엣 영역, 5번째 이후는 추가 모델컷으로 이어집니다."
-    )
-    basic_model_images = st.file_uploader(
-        "모델컷/마네킹컷/상품 전체컷 여러 장 업로드",
-        type=["jpg", "jpeg", "png", "webp"],
-        accept_multiple_files=True,
-        key="basic_model_images",
-        help="모델 착용컷, 마네킹 앞/뒤, 전신컷, 색상별 전체컷 등을 순서대로 선택하세요.",
-    )
-    show_uploaded_preview(basic_model_images)
-
-    st.markdown("### 02. 디테일컷 · 원단컷 · 봉제컷")
-    st.caption(
-        "원단, 단추, 넥라인, 소매, 밑단, 봉제선 같은 디테일 사진을 여러 장 업로드합니다. "
-        "1~4번째 사진은 기본 디테일 위치에 들어가고, 5번째 이후는 추가 디테일컷으로 이어집니다."
-    )
-    basic_detail_images = st.file_uploader(
-        "디테일컷/원단컷/봉제컷 여러 장 업로드",
-        type=["jpg", "jpeg", "png", "webp"],
-        accept_multiple_files=True,
-        key="basic_detail_images",
-        help="원단 접사, 넥라인, 소매, 밑단, 단추, 지퍼, 라벨 등 디테일 사진을 순서대로 선택하세요.",
-    )
-    show_uploaded_preview(basic_detail_images)
-
-    st.markdown("### 03. 코디컷 · 색상컷 · 기타 상세 이미지")
-    st.caption(
-        "코디컷, 컬러뷰, 무드컷, 추가 설명 이미지를 여러 장 업로드합니다. "
-        "1번째 사진은 기본 스타일링 위치에 들어가고, 2번째 이후는 추가 갤러리로 이어집니다."
-    )
-    basic_gallery_images = st.file_uploader(
-        "코디컷/색상컷/기타 이미지 여러 장 업로드",
-        type=["jpg", "jpeg", "png", "webp"],
-        accept_multiple_files=True,
-        key="basic_gallery_images",
-        help="컬러별 앞뒤컷, 코디컷, 무드컷, 추가 안내 이미지를 순서대로 선택하세요.",
-    )
-    show_uploaded_preview(basic_gallery_images)
-
-    st.markdown("### 04. 실측 사이즈 안내 이미지")
-    st.caption("실측 위치를 그림이나 사진으로 보여주고 싶을 때만 1장 업로드합니다. 생략해도 실측 사이즈표는 생성됩니다.")
-    basic_size_image = st.file_uploader(
-        "사이즈 측정 이미지 1장 업로드",
-        type=["jpg", "jpeg", "png", "webp"],
-        key="basic_size_image",
-    )
-    if basic_size_image is not None:
-        st.image(basic_size_image, use_container_width=True)
+    st.subheader("기본 배치 사진")
+    st.caption("기본 사진은 각 위치에 1장씩 들어갑니다. JPG, JPEG, PNG, WEBP를 사용할 수 있습니다.")
+    for row in range(0, len(IMAGE_SLOTS), 2):
+        cols = st.columns(2)
+        for offset, col in enumerate(cols):
+            index = row + offset
+            if index >= len(IMAGE_SLOTS):
+                break
+            key, label, help_text = IMAGE_SLOTS[index]
+            with col:
+                st.markdown(f"**{label}**")
+                st.caption(help_text)
+                uploaded = st.file_uploader(
+                    "사진을 넣어주세요",
+                    type=["jpg", "jpeg", "png", "webp"],
+                    key=f"upload_{key}",
+                    label_visibility="collapsed",
+                )
+                if uploaded is not None:
+                    st.image(uploaded, use_container_width=True)
 
     st.subheader("09. 국내제작 이미지 · 고정 사용")
     st.caption("아래 이미지는 모든 상세페이지에 자동으로 들어가며 별도 업로드가 필요하지 않습니다.")
@@ -1084,6 +1043,39 @@ with tab4:
         st.image(str(DEFAULT_KOREA_IMAGE), use_container_width=True)
     else:
         st.error("assets/domestic_production.jpg 파일을 찾을 수 없습니다.")
+
+    st.divider()
+    st.subheader("추가 사진 여러 장 업로드")
+    st.caption(
+        f"추가 사진은 세 구역을 합쳐 최대 {MAX_EXTRA_IMAGES}장까지 완성 JPG에 반영됩니다. "
+        "선택한 순서대로 배치됩니다."
+    )
+    extra_model = st.file_uploader(
+        "추가 모델 착용컷",
+        type=["jpg", "jpeg", "png", "webp"],
+        accept_multiple_files=True,
+        key="extra_model_images",
+        help="정면·측면·다른 포즈 등 모델 착용사진을 여러 장 선택하세요.",
+    )
+    show_uploaded_preview(extra_model)
+
+    extra_detail = st.file_uploader(
+        "추가 원단·봉제·단추 디테일컷",
+        type=["jpg", "jpeg", "png", "webp"],
+        accept_multiple_files=True,
+        key="extra_detail_images",
+        help="원단, 봉제선, 밑단, 단추, 라벨 등의 접사 사진을 여러 장 선택하세요.",
+    )
+    show_uploaded_preview(extra_detail)
+
+    extra_gallery = st.file_uploader(
+        "추가 코디·기타 상세 이미지",
+        type=["jpg", "jpeg", "png", "webp"],
+        accept_multiple_files=True,
+        key="extra_gallery_images",
+        help="코디컷, 색상컷, 무드컷, 추가 설명 이미지 등을 여러 장 선택하세요.",
+    )
+    show_uploaded_preview(extra_gallery)
 
 
 with tab5:
@@ -1228,32 +1220,18 @@ st.subheader("상세페이지 JPG 생성")
 
 if st.button("완성된 상세페이지 JPG 만들기", type="primary", use_container_width=True):
     config = current_config()
-
-    basic_model_images = list(st.session_state.get("basic_model_images") or [])
-    basic_detail_images = list(st.session_state.get("basic_detail_images") or [])
-    basic_gallery_images = list(st.session_state.get("basic_gallery_images") or [])
-
-    core_images = {key: None for key in CORE_IMAGE_KEYS}
-    for image_key, uploaded in zip(MODEL_CORE_KEYS, basic_model_images):
-        core_images[image_key] = uploaded
-    for image_key, uploaded in zip(DETAIL_CORE_KEYS, basic_detail_images):
-        core_images[image_key] = uploaded
-    for image_key, uploaded in zip(GALLERY_CORE_KEYS, basic_gallery_images):
-        core_images[image_key] = uploaded
-    core_images["size"] = st.session_state.get("basic_size_image")
-
+    core_images = {key: st.session_state.get(f"upload_{key}") for key, _, _ in IMAGE_SLOTS}
     if DEFAULT_KOREA_IMAGE.exists():
         core_images["korea"] = BytesIO(DEFAULT_KOREA_IMAGE.read_bytes())
     else:
         core_images["korea"] = None
-
-    extra_model_images = basic_model_images[len(MODEL_CORE_KEYS):]
-    extra_detail_images = basic_detail_images[len(DETAIL_CORE_KEYS):]
-    extra_gallery_images = basic_gallery_images[len(GALLERY_CORE_KEYS):]
+    extra_model_images = st.session_state.get("extra_model_images") or []
+    extra_detail_images = st.session_state.get("extra_detail_images") or []
+    extra_gallery_images = st.session_state.get("extra_gallery_images") or []
     extra_total = len(extra_model_images) + len(extra_detail_images) + len(extra_gallery_images)
 
     if core_images.get("hero") is None and core_images.get("front") is None:
-        st.warning("모델컷·마네킹컷·상품 전체컷 중 최소 1장은 넣는 것이 좋습니다.")
+        st.warning("대표 모델컷이나 정면 착용컷 중 최소 1장은 넣는 것이 좋습니다.")
 
     try:
         with st.spinner("긴 상세페이지 JPG를 제작하고 있습니다..."):
